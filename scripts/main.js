@@ -270,16 +270,25 @@ paginas['musicas'] = {
         await loading_comeco()
     
         let nome = document.getElementById('pesquisa').value
-        let filtros = ''
+        let filtros = []
         
-        let registros = await api_database({
-            fluxo: 'obterMusicas',
-            nome: nome,
-            filtros: filtros
-        })
+        let query = db
+            .from('musicas')
+            .select('id, versao, nome, tonalidade, conteudo, momento');
+
+        if (nome && nome !== '') {
+            query = query.ilike('nome', `%${nome}%`);
+        }
+        if (filtros.length > 0) {
+            query = query.in('momento', filtros);
+        }
         
-        for(c1 = 0; c1 < registros.dados.length; c1++){
-            let r = registros.dados[c1]
+        query = query.order('nome', { ascending: true });
+
+        let registros = await query
+
+        for(c1 = 0; c1 < registros.data.length; c1++){
+            let r = registros.data[c1]
             let nome = r.nome
             let id = r.id
             let tonalidade = r.tonalidade
@@ -289,8 +298,8 @@ paginas['musicas'] = {
             `})
         }
         
-        if(registros.dados.length != 0){
-            document.getElementById('quantidade_de_registros').innerHTML = `${registros.dados.length} Músicas encontradas`
+        if(registros.data.length != 0){
+            document.getElementById('quantidade_de_registros').innerHTML = `${registros.data.length} Músicas encontradas`
         }  
         else{
             document.getElementById('quantidade_de_registros').innerHTML = `Nenhuma música foi encontrada !`
@@ -327,10 +336,12 @@ paginas['musicas'] = {
                 let musica = prompt('Informe o nome da música')
                 let escolha = confirm(`Você confirma a inclusão da música ${musica} ?`)
                 if(escolha){
-                    await api_database({
-                        fluxo: 'adicionarMusica',
-                        musica: musica
-                    })
+
+                    await db
+                        .from('musicas')
+                        .insert([{ 
+                            nome: musica
+                        }]);
                     
                     alert('Música incluída com sucesso !')   
                 }   
