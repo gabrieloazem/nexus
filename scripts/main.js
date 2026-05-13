@@ -27,6 +27,10 @@ async function iniciar_sistema(){
             {nome: 'Perfil', icone: 'config1' }
         ]
     })
+
+    document.getElementById('menu_hamburguer').addEventListener('click', async() => {
+        await carregar_pagina({nome: 'menu_mobile'})
+    })
 } 
 
 async function criar_pagina_inicial(){
@@ -1099,8 +1103,6 @@ function obterDataAtual(){
     return new Date().toISOString().split('T')[0];
 }
 
-paginas['tempo_livre'] = {}
-
 paginas['cores'] = {}
 
 paginas['criptografia'] = {}
@@ -1428,19 +1430,16 @@ function deslocarNota(ultima_nota,  item) {
             if ( ( posicao + deslocamento ) > 11 ){
                 nova_posicao = posicao + deslocamento 
                 nova_posicao -= 12
-                console.log ( posicao, deslocamento, 'vai para o inicio', nova_posicao )
                 fim = 's'
             }
             if ( ( posicao + deslocamento ) < 0 && fim == 'n' ){
                 nova_posicao = posicao + deslocamento 
                 nova_posicao += 12
-                console.log ( posicao, deslocamento, 'vai para o fim', nova_posicao )
                 fim = 's'
             }
                                 
             if ( nova_posicao == ''  && fim == 'n' ) {
                 nova_posicao = posicao + deslocamento 
-                console.log ( posicao, deslocamento, 'normal', nova_posicao )
             }
         }
         c3 += 1
@@ -1531,6 +1530,309 @@ async function apagar_anotacao(){
         }
     }
 }
+
+paginas['tempo_livre'] = {
+    html: `
+        <div id="menu" class="f bg-1C1C1C w-100 h-10">
+                <div id="submenu" class="f w-69 mr-1 h-100 df-c-d">
+                <select id="pesquisa_tipo" class="f bg-white w-33 hr-2 df-c-c borda-none borda-radius outline-none texto-centralizado pointer">
+                    <option value="Tipo" class="bg-white cor-black">Tipo</option>
+                    <option value="Jogo" class="bg-white cor-black">Jogo</option>
+                    <option value="Filme" class="bg-white cor-black">Filme</option>
+                    <option value="Série" class="bg-white cor-black">Série</option>
+                    <option value="Anime" class="bg-white cor-black">Anime</option>
+                    <option value="Manga" class="bg-white cor-black">Manga</option>
+                    <option value="Manhwa" class="bg-white cor-black">Manhwa</option>
+                    <option value="Livro" class="bg-white cor-black">Livro</option>
+                    <option value="Gameplay" class="bg-white cor-black">Gameplay</option>
+                </select>
+                <select id="pesquisa_comprado" class="f bg-white w-33 hr-2 df-c-c borda-none borda-radius outline-none texto-centralizado pointer">
+                    <option value="Comprado" class="bg-white cor-black">Comprado</option>
+                    <option value="N" class="bg-white cor-black">N</option>
+                    <option value="S" class="bg-white cor-black">S</option>
+                </select>
+                <select id="pesquisa_finalizado" class="f bg-white w-33 hr-2 df-c-c borda-none borda-radius outline-none texto-centralizado pointer">
+                    <option value="Finalizado" class="bg-white cor-black">Finalizado</option>
+                    <option value="N" class="bg-white cor-black">N</option>
+                    <option value="S" class="bg-white cor-black">S</option>
+                </select>
+                <select id="pesquisa_categoria" class="f bg-white w-33 hr-2 df-c-c borda-none borda-radius outline-none texto-centralizado pointer">
+                    <option value="Categoria" class="bg-white cor-black">Categoria</option>
+                    <option value="PC" class="bg-white cor-black">PC</option>
+                    <option value="Emulador" class="bg-white cor-black">Emulador</option>
+                    <option value="Romance" class="bg-white cor-black">Romance</option>
+                    <option value="Com Link" class="bg-white cor-black">Com Link</option>
+                    <option value="Sem Link" class="bg-white cor-black">Sem Link</option>
+                    <option value="Favoritos" class="bg-white cor-black">Favoritos</option>
+                </select>
+                <select id="ordenacao" class="f bg-white w-33 hr-2 df-c-c borda-none borda-radius outline-none texto-centralizado pointer">
+                    <option value="Ordenado por Nome" class="bg-white cor-black">Ordenado por Nome</option>
+                    <option value="Ordenado por Preço" class="bg-white cor-black">Ordenado por Preço</option>
+                </select>
+                <input id="pesquisa_nome" class="f bg-white w-33 hr-2 df-c-c borda-none borda-radius outline-none texto-centralizado pointer" placeholder="Nome">
+                    <div id="conteudor" class="f bg-004ea2 cor-white w-33 hr-2 df-c-c borda-none borda-radius outline-none texto-centralizado pointer">Buscar</div>
+                    <div id="conteudorr" class="f w-50 hr-2" style="background: url(&quot;https://jeyoredfield.online/icones/add.svg?v=1778680949238&quot;) 0% 0% / 100% 100% no-repeat;">
+                </div>
+                <div id="icone_add" class="f w-50 hr-2"> + </div>
+            </div>
+        </div>
+        <div id = 'registros' class = 'f w-98 ml-1 h-90 scroll-y'> </div>
+    `,
+
+    eventos: async() => {
+        pesquisar_tempo_livre()
+    }
+}
+
+async function pesquisar_tempo_livre(){
+    remover_elementos('register')
+
+    let registros = await db
+        .from('tempo_livre')
+        .select('id, nome, finalizado, comprado, preco, categorias')
+
+    for(let c1 = 0; c1 < registros.data.length; c1++){
+        let r = registros.data[c1]
+        let nome = r.nome
+        let finalizado = r.finalizado
+
+        cor_fundo = {
+            'N': 'CF0F47',
+            'S': '024c51'
+        }[finalizado]
+
+        inserir_html({ destino: 'registros', html: `
+            <div class = 'register f bg-${cor_fundo} w-92 pl-5 hr-3 mt-02 borda_padrao sombra_padrao borda-radius-10px df-c-e pointer font-09 cor-white') > ${nome} </div>
+        `})
+    }
+}
+
+paginas['menu_mobile'] = {
+    html: `
+        <div class = 'register f w-90 pl-5 hr-3 mt-02 borda_padrao sombra_padrao borda-radius-10px df-c-e pointer font-09 cor-495057' onClick = "carregar_pagina({ nome: 'checklist' })" ) > Checklist </div>
+        <div class = 'register f w-90 pl-5 hr-3 mt-02 borda_padrao sombra_padrao borda-radius-10px df-c-e pointer font-09 cor-495057' onClick = "carregar_pagina({ nome: 'financas' })" ) > Finanças </div>
+        <div class = 'register f w-90 pl-5 hr-3 mt-02 borda_padrao sombra_padrao borda-radius-10px df-c-e pointer font-09 cor-495057' onClick = "carregar_pagina({ nome: 'musicas' })" ) > Músicas </div>
+        <div class = 'register f w-90 pl-5 hr-3 mt-02 borda_padrao sombra_padrao borda-radius-10px df-c-e pointer font-09 cor-495057' onClick = "carregar_pagina({ nome: 'tempo_livre' })" ) > Tempo livre </div>
+        <div class = 'register f w-90 pl-5 hr-3 mt-02 borda_padrao sombra_padrao borda-radius-10px df-c-e pointer font-09 cor-495057' onClick = "carregar_pagina({ nome: 'cores' })" ) > Cores </div>
+    `
+}
+
+paginas['cores'] = {
+    eventos: () => {
+        palhetas = []
+
+        palhetas.push([
+            // 🟢 VERDES (do mais escuro → mais claro)
+            '#014e53',
+            '#024c51',
+            '#046d6c',
+            '#006A71',
+            '#048d6c',
+            '#488b85',
+            '#46A4A5',
+            '#48A6A7',
+            '#19e0cd',
+            '#399d2d',
+            '#42c505',
+            '#01f86b',
+            'green',
+            
+        // 🔵 AZUIS
+        '#648DB3',
+        '#9fd1e7',
+        '#0a1c3f',
+        '#0a1c3fd6',
+        '#0a2745',
+        '#123458',
+        '#13335a',
+        '#174276',
+        '#213448',
+        '#2563eb',
+        '#27548A',
+        '#2f71d7',
+        '#3484ac',
+        '#3674B5',
+        '#3a9cca',
+        '#40b4e6',
+        '#578FCA',
+        '#7F8CAA',
+        '#8cb8ed',
+        '#e6f2ff',
+
+        // 🟣 ROXOS E MAGENTAS
+        '#432364',
+        '#7e0a90',
+        '#7965C1',
+        '#c93964',
+        '#CD4C72',
+        '#CF0F47',
+        '#E75480',
+        '#FF69B4',
+        '#FF9898',
+
+        // 🔴/🟠 VERMELHOS E LARANJAS
+        '#331F19',
+        '#FB9E3A',
+        '#FFD586',
+        'orange',
+        'red',
+
+        // ⚪ NEUTROS / CINZAS / PRETOS
+        '#1a1a1a',
+        '#1C1C1C',
+        '#222222',
+        '#26262d',
+        '#292929',
+        '#2c3e50',
+        '#374151',
+        '#444040',
+        '#545454',
+        '#6b7280',
+        '#C9C8C8',
+        '#CBBBA7',
+        '#CCD595',
+        '#c1b9b9',
+        '#d1d5db',
+        '#e1dbdb',
+        '#e5e7eb',
+        '#eaf0f1',
+        '#f0f0f0',
+        '#f3f4f6',
+        '#f4fbff',
+        '#f5f5f5',
+        '#f9fafb',
+        'gray',
+        '#ccc',
+        'black',
+
+        // 🟡 AMARELOS / BEGES
+        '#D4C9BE',
+        '#F1EFEC',
+        '#F2EFE7',
+        '#F4FBFF',
+
+        // ⚪ BRANCOS E TRANSPARÊNCIAS
+        'white',
+        '#FFFFFF1A',
+        '#FFFFFF66',
+        'transparent',
+        'blue',
+        ])
+
+        for(c1 = 0; c1 < palhetas.length; c1 ++){
+            criar_elemento({
+                tipo: 'div',
+                classes: 'f df-c-c w-98 ml-1 hr-3 font-105',
+                texto: 'Cores',
+                destino: ['janela']
+            })
+            
+            for(c2 = 0; c2 < palhetas[c1].length; c2 ++){
+                var texto = 'white'
+                var cor = palhetas[c1][c2]
+                if( [
+                        'white',
+                        '',
+                        '#FFFFFF1A',
+                        '#F1EFEC',
+                        '#D4C9BE',
+                        '#FFFFFF66',
+                        '#e6f2ff',
+                        'transparent',
+                        '#eaf0f1',
+                        '#f0f0f0',
+                        '#f3f4f6',
+                        '#f4fbff',
+                        '#f5f5f5',
+                        '#f9fafb',
+                        '#F2EFE7',
+                        '#F4FBFF',
+                        '#e5e7eb'
+                    ].includes(cor) ){
+                    texto = 'black'
+                }
+                
+                criar_elemento({
+                    tipo: 'div',
+                    classes: `f df-c-c w-48 ml-1 hr-2 bg-${cor.replace('#','')} cor-${texto} texto-centralizado borda-gray mt-02`,
+                    texto: `${cor}`,
+                    destino: ['conteudo']
+                })
+            }
+        }
+            
+            // FONTES =================================================================================
+            
+            criar_elemento({
+                tipo: 'div',
+                classes: 'f df-c-c w-98 ml-1 hr-3 font-105',
+                texto: 'Fontes',
+                destino: ['conteudo']
+            })
+            
+            let fontes = [
+            // ==== Sans-serif ====
+            'arial',
+            'cabin',
+            'quicksand',
+            'segoe_ui',
+            'pacifico',
+            'inter',
+            'helvetica',
+            'verdana',
+            'tahoma',
+            'trebuchet_ms',
+            'gill_sans',
+            'roboto',
+            'ubuntu',
+            'san_francisco',
+            
+            // ==== Serif ====
+            'times_new_roman',
+            'georgia',
+            'garamond',
+            'palatino_linotype',
+            'book_antiqua',
+            
+            // ==== Monospace ====
+            'courier_new',
+            'consolas',
+            'lucida_console',
+            'monaco',
+            
+            // ==== Cursive ====
+            'comic_sans_ms',
+            'brush_script_mt',
+            'apple_chancery',
+            
+            // ==== Fantasy ====
+            'impact',
+            'copperplate',
+            'luminari',
+            
+            'montserrat'
+            ]
+
+            
+            for(c1 = 0; c1 < fontes.length; c1 ++){
+                let fonte = fontes[c1]
+                console.log(fonte)
+                
+                criar_elemento({
+                    tipo: 'div',
+                    classes: `f df-c-e w-47 pl-1 ml-1 hr-2 font-${fonte} texto-centralizado borda-gray mt-02`,
+                    texto: `Hello World - ( ${fonte} )`,
+                    legenda: [fonte,'abaixo'],
+                    destino: ['conteudo']
+                })
+                
+            }
+    }
+}
+
+// menu
+// cores
+// tempo_livre
 
 // Variaveis
 let dataAtual = obterDataAtual()

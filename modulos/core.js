@@ -43,7 +43,7 @@ function obter_imagem(config){
         largura = 40
     } = config
     
-    return `<div style = " background-image: url(${caminho}); " class = 'w-${largura} h-${altura} foto' > </div>`
+    return `<div style = " background-image: url(${caminho}); " class = 'f w-${largura} h-${altura} foto' > </div>`
 }
 
 function obter_icone_svg(config) {
@@ -136,7 +136,7 @@ function criar_pagina(config){
     if(layout == 'atual'){
         let html_marca = ''
         if(marca.tipo == 'texto'){
-            html_marca = `<div id = 'marca' class='f w-100 h-100 df-c-c'> ${marca.texto} </div>`
+            html_marca = `<div id = 'marca' class='f w-80 h-100 df-c-c'> ${marca.texto} </div>`
         }
         if(marca.tipo == 'imagem'){
             html_marca = obter_imagem({ caminho: marca.imagem });
@@ -161,6 +161,7 @@ function criar_pagina(config){
             <div id='janela' class='f w-100 h-100 font-arial'>
                 <div id='menu_mobile' class='mobile_only ocultar_na_impressao f w-100 h-10 bg-f9fafb'> 
                     ${html_marca}
+                    <div id = 'menu_hamburguer' class = 'fr w-10 h-100 df-c-c pointer font-102'> ☰ </div>
                 </div>
                 <div class = 'desktop_only f w-20 h-100 bg-black'> </div>
                 <div class = 'desktop_only f w-80 h-10 bg-gray'> </div>
