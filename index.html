@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <title> Recursos</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    
+    <script>
+        const versao_arquivos = Date.now(); 
+
+        // Transformamos em Promise para podermos usar o 'await'
+        function carregar_recurso(caminho) {
+            return new Promise((resolve, reject) => {
+                const url = `${caminho}?v=${versao_arquivos}`;
+                
+                if (caminho.endsWith('.css')) {
+                    const link = document.createElement('link');
+                    link.rel = 'stylesheet';
+                    link.href = url;
+                    document.head.appendChild(link);
+                    resolve(); // CSS não bloqueia a lógica, então resolvemos direto
+                } 
+                else if (caminho.endsWith('.js')) {
+                    const s = document.createElement('script');
+                    s.src = url;
+                    s.async = false; // Importante para navegadores antigos
+                    
+                    // O "pulo do gato": só resolve a promessa quando o arquivo carrega 100%
+                    s.onload = () => resolve();
+                    s.onerror = () => reject(new Error(`Falha ao carregar: ${caminho}`));
+                    
+                    document.body.appendChild(s);
+                } 
+                else {
+                    // Favicon e outros
+                    const icon = document.createElement('link');
+                    icon.rel = 'icon';
+                    icon.href = url;
+                    document.head.appendChild(icon);
+                    resolve();
+                }
+            });
+        }
+    </script>
+</head>
+<body>
+
+    <script>
+        async function iniciar_carregamento() {
+            const meusArquivos = [
+                "favicon.ico",
+
+                "modulos/core.css",
+                "styles/main.css",
+
+                "modulos/core.js",
+                "modulos/graphics.js",
+                "modulos/supabase_mini.js",
+                "modulos/supabase.js",
+                "scripts/main.js"
+            ];
+
+            for (const arquivo of meusArquivos) {
+                try {
+                    await carregar_recurso(arquivo);
+                } catch (erro) {
+                    console.error(erro);
+                }
+            }
+        }
+
+        iniciar_carregamento();
+    </script>
+
+</body>
+</html>
