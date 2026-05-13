@@ -374,12 +374,15 @@ paginas['favoritas'] = {
         let nome = document.getElementById('pesquisa').value
         let filtros = ''
         
-        let registros = await api_database({
-            fluxo: 'obterMusicasFavoritas'
-        })
+        let registros = await db
+            .from('musicas')
+            .select(' id, versao, nome, tonalidade, conteudo, momento') 
+            .eq('favoritas', 'Sim')                     
+            .order('nome', { ascending: true }); 
+
         
-        for(c1 = 0; c1 < registros.dados.length; c1++){
-            let r = registros.dados[c1]
+        for(c1 = 0; c1 < registros.data.length; c1++){
+            let r = registros.data[c1]
             let nome = r.nome
             let id = r.id
             let tonalidade = r.tonalidade
@@ -389,8 +392,8 @@ paginas['favoritas'] = {
             `})
         }
         
-        if(registros.dados.length != 0){
-            document.getElementById('quantidade_de_registros').innerHTML = `${registros.dados.length} Músicas encontradas`
+        if(registros.data.length != 0){
+            document.getElementById('quantidade_de_registros').innerHTML = `${registros.data.length} Músicas encontradas`
         }  
         else{
             document.getElementById('quantidade_de_registros').innerHTML = `Nenhuma música foi encontrada !`
@@ -423,10 +426,11 @@ paginas['favoritas'] = {
                 let musica = prompt('Informe o nome da música')
                 let escolha = confirm(`Você confirma a inclusão da música ${musica} ?`)
                 if(escolha){
-                    await api_database({
-                        fluxo: 'adicionarMusica',
-                        musica: musica
-                    })
+                    await db
+                        .from('musicas')
+                        .insert([{ 
+                            nome: musica
+                        }]);
                     
                     alert('Música incluída com sucesso !')   
                 }   
@@ -490,10 +494,11 @@ paginas['musica'] =  {
             if(resultado){ 
                 let escolha = confirm('Você confirma a exclusão dessa música ?')
                 if(escolha){
-                    await api_database({
-                        fluxo: 'apagarMusica',
-                        id: ultimaConsulta.id
-                    })
+
+                    await db
+                        .from('musicas')
+                        .delete()
+                        .eq( id, id )
                     
                     alert('Música Excluída !')
                     
@@ -645,16 +650,17 @@ paginas['editarMusica'] = {
                 momento += ` Andamento`
             }
             
-            await api_database({
-                fluxo: 'atualizarMusica',
-                id: id,
+            await db
+            .from('musicas')
+            .update({ 
                 nome: nome,
                 tonalidade: tonalidade,
                 conteudo: conteudo,
                 momento: momento,
                 favoritas: favoritas,
-                finalizada: finalizada
-            })
+                finalizada: finalizada 
+            }) 
+            .eq('id', id);
             
             alert('Música Atualizada')
             await paginaMusica(id)
@@ -706,16 +712,24 @@ async function editar_tarefas(){
     
 }
 
+function tratarQuebrasDeLinha(texto) {
+  if (!texto) return texto;
+  // Usamos uma expressão regular com o sinalizador 'g' (global) 
+  // para substituir todas as ocorrências na string.
+  return texto.replace(/\\n/g, '\n');
+}
+
 async function paginaMusica(id, tom = false){
     await loading_comeco()
     
     await carregar_pagina({ nome: 'musica' })
+
+    let r = await db
+        .from('musicas')
+        .select('id, versao, nome, tonalidade, momento,conteudo,favoritas,finalizada')
+        .eq('id', id)  
     
-    let r = await api_database({
-        fluxo: 'obterMusica',
-        id: id
-    })
-    r = r.dados[0]
+    r =  r.data[0]
 
     let musica = r.nome
     
@@ -727,7 +741,7 @@ async function paginaMusica(id, tom = false){
         tonalidade = ultimaConsulta.tonalidade
     }
     
-    let conteudo = r.conteudo
+    let conteudo = tratarQuebrasDeLinha ( r.conteudo )
     let momento = r.momento
     let favoritas = r.favoritas
     let finalizada = r.finalizada
