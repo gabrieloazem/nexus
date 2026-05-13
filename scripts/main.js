@@ -130,6 +130,7 @@ paginas['checklist'] = {
                     .eq('nome', nome)
 
             let conteudo = resposta.data[0]['conteudo'];
+                conteudo = tratarQuebrasDeLinha(conteudo)
             conteudo = conteudo.split('\n');
 
             document.getElementById('registros').style.display = 'block';
