@@ -1,5 +1,5 @@
 const supabase_url = 'https://zdriboihloujzdjgtbmq.supabase.co'
-let supabase_key = 'sb_publishable_XFhukLUM3EeSzSoL8kD4vw_QC0iAXXk'
+let supabase_key = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inpkcmlib2lobG91anpkamd0Ym1xIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg1MDc0MDIsImV4cCI6MjA5NDA4MzQwMn0.GqD3hDxuytt9HSHfqF0S5PR0er01Hq9Z6VMZhU3InGc'
 let db = supabase.createClient(supabase_url, supabase_key)
 
 let backup_sql_tabelas = [
