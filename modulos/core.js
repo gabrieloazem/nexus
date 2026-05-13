@@ -381,7 +381,7 @@ function gerarHTML(item) {
     return html;
 }
 
-let UI = {
+UI = {
     
     divFinal: ({}) => `
        </div>
