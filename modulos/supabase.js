@@ -1,33 +1,6 @@
 const supabase_url = 'https://zdriboihloujzdjgtbmq.supabase.co'
-let supabase_key = localStorage.getItem('supabase_key')
-let db
-
-async function iniciar_database() {
-    let chave_valida = false;
-
-    while (!chave_valida) {
-        if (!supabase_key) {
-            supabase_key = prompt("🔒 Informe a senha para acessar o sistema");
-            if (!supabase_key) continue;
-        }
-
-        const cliente_teste = supabase.createClient(supabase_url, supabase_key);
-        
-        // O sistema "trava" aqui esperando o Supabase responder
-        const { data, error } = await cliente_teste.from(backup_sql_tabelas[0]).select('id').limit(1);
-
-        if (error) {
-            alert("❌ Senha inválida !\n\nTente novamente.");
-            supabase_key = null;
-            localStorage.removeItem('supabase_key');
-        } else {
-            localStorage.setItem('supabase_key', supabase_key);
-            db = cliente_teste; // Define o db global
-            chave_valida = true;
-            return db; // Sai da função com o banco pronto
-        }
-    }
-}
+let supabase_key = 'sb_publishable_XFhukLUM3EeSzSoL8kD4vw_QC0iAXXk'
+let db = supabase.createClient(supabase_url, supabase_key)
 
 let backup_sql_tabelas = [
     'jeyo_anotacoes',
