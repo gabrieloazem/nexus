@@ -55,8 +55,8 @@ paginas['checklist'] = {
 
             document.getElementById('lista_de_categorias').innerHTML = '';
 
-            for (let c1 = 0; c1 < registros.length; c1++) {
-                let r = registros[c1];
+            for (let c1 = 0; c1 < registros.data.length; c1++) {
+                let r = registros.data[c1];
                 let categoria = r['nome'];
 
                 inserir_html({
@@ -75,7 +75,7 @@ paginas['checklist'] = {
                     .select('conteudo') 
                     .eq('nome', nome)
 
-            let conteudo = resposta[0]['conteudo'];
+            let conteudo = resposta.data[0]['conteudo'];
                 conteudo = tratarQuebrasDeLinha(conteudo)
             conteudo = conteudo.split('\n');
 
@@ -241,7 +241,7 @@ paginas['checklist'] = {
                     .select('conteudo') 
                     .eq('nome', nome)
             
-            conteudo = conteudo[0]['conteudo']
+            conteudo = conteudo.data[0]['conteudo']
             
             document.getElementById('registros').style.display = 'none'
             document.getElementById('registros_conteudo').style.display = 'block'    
@@ -276,7 +276,7 @@ paginas['checklist'] = {
                 .select('conteudo')                     // Aqui você lista as colunas separadas por vírgula
                 .eq('nome', nome)    
             
-            conteudo = conteudo[0]['conteudo']
+            conteudo = conteudo.data[0]['conteudo']
             conteudo = conteudo.split('\n')
             for(let c1 = 0; c1 < conteudo.length; c1++){
                 let tarefa = conteudo[c1]

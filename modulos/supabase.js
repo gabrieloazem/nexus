@@ -2,4 +2,4 @@ const supabase_url = 'https://zdriboihloujzdjgtbmq.supabase.co'
 
 const supabase_key = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Inpkcmlib2lobG91anpkamd0Ym1xIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzg1MDc0MDIsImV4cCI6MjA5NDA4MzQwMn0.GqD3hDxuytt9HSHfqF0S5PR0er01Hq9Z6VMZhU3InGc'
 
-const db = supabase.createClient(supabase_url, supabase_key)
+db = supabase.createClient(supabase_url, supabase_key)
