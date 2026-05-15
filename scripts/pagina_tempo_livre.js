@@ -32,7 +32,7 @@ paginas['tempo_livre'] = {
     eventos: async() => {
         pesquisar_tempo_livre()
 
-        await db.rpc('api/sincronizar_finalizados.php')
+        // await db.rpc('api/sincronizar_finalizados.php')
 
         document.getElementById('buscar').addEventListener('click', async() => {
             await pesquisar_tempo_livre()
