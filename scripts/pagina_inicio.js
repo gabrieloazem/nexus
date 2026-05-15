@@ -1,0 +1,3 @@
+paginas['inicio'] = {
+    html: ''   
+}

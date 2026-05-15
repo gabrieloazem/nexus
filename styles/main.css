@@ -1,8 +1,0 @@
-#atalho1_icone svg {
-    fill: #3498db; /* Define a cor azul */
-    transition: 0.3s; /* Deixa a mudança suave no clique/hover */
-}
-
-#atalho1_icone:hover svg {
-    fill: #e74c3c; /* Muda para vermelho ao passar o mouse */
-}

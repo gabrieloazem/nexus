@@ -101,12 +101,9 @@ paginas['cores'] = {
         ])
 
         for(c1 = 0; c1 < palhetas.length; c1 ++){
-            criar_elemento({
-                tipo: 'div',
-                classes: 'f df-c-c w-98 ml-1 hr-3 font-105',
-                texto: 'Cores',
-                destino: ['janela']
-            })
+            inserir_html({ html: `
+                <div class = 'f df-c-c w-98 ml-1 hr-3 font-105'> Cores </div>
+            `})
             
             for(c2 = 0; c2 < palhetas[c1].length; c2 ++){
                 var texto = 'white'
@@ -132,13 +129,13 @@ paginas['cores'] = {
                     ].includes(cor) ){
                     texto = 'black'
                 }
+
+                inserir_html({ html: `
+                    <div class = 'f df-c-c w-48 ml-1 hr-2 bg-${cor.replace('#','')} cor-${texto} texto-centralizado borda-gray mt-02'> 
+                        ${cor} 
+                    </div>
+                `})
                 
-                criar_elemento({
-                    tipo: 'div',
-                    classes: `f df-c-c w-48 ml-1 hr-2 bg-${cor.replace('#','')} cor-${texto} texto-centralizado borda-gray mt-02`,
-                    texto: `${cor}`,
-                    destino: ['conteudo']
-                })
             }
         }
     }
