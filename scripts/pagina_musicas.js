@@ -37,8 +37,8 @@ paginas['musicas'] = {
 
         let registros = await query
 
-        for(c1 = 0; c1 < registros.length; c1++){
-            let r = registros[c1]
+        for(c1 = 0; c1 < registros.data.length; c1++){
+            let r = registros.data[c1]
             let nome = r.nome
             let id = r.id
             let tonalidade = r.tonalidade
@@ -48,8 +48,8 @@ paginas['musicas'] = {
             `})
         }
         
-        if(registros.length != 0){
-            document.getElementById('quantidade_de_registros').innerHTML = `${registros.length} Músicas encontradas`
+        if(registros.data.length != 0){
+            document.getElementById('quantidade_de_registros').innerHTML = `${registros.data.length} Músicas encontradas`
         }  
         else{
             document.getElementById('quantidade_de_registros').innerHTML = `Nenhuma música foi encontrada !`
@@ -131,8 +131,8 @@ paginas['favoritas'] = {
             .order('nome', { ascending: true }); 
 
         
-        for(c1 = 0; c1 < registros.length; c1++){
-            let r = registros[c1]
+        for(c1 = 0; c1 < registros.data.length; c1++){
+            let r = registros.data[c1]
             let nome = r.nome
             let id = r.id
             let tonalidade = r.tonalidade
@@ -142,8 +142,8 @@ paginas['favoritas'] = {
             `})
         }
         
-        if(registros.length != 0){
-            document.getElementById('quantidade_de_registros').innerHTML = `${registros.length} Músicas encontradas`
+        if(registros.data.length != 0){
+            document.getElementById('quantidade_de_registros').innerHTML = `${registros.data.length} Músicas encontradas`
         }  
         else{
             document.getElementById('quantidade_de_registros').innerHTML = `Nenhuma música foi encontrada !`
@@ -427,7 +427,7 @@ async function paginaMusica(id, tom = false){
         .select('id, versao, nome, tonalidade, momento,conteudo,favoritas,finalizada')
         .eq('id', id)  
     
-    r =  r[0]
+    r =  r.data[0]
 
     let musica = r.nome
     
