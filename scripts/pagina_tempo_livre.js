@@ -102,9 +102,9 @@ async function pesquisar_tempo_livre(){
 
     let registros = await query
 
-    for(let c1 = 0; c1 < registros.length; c1++){
+    for(let c1 = 0; c1 < registros.data.length; c1++){
         let registro_id = `registro${c1}`
-        let r = registros[c1]
+        let r = registros.data[c1]
         let nome = r.nome
         let finalizado = r.finalizado
         let id = r.id
@@ -139,7 +139,7 @@ async function pagina_individual_checklist(config){
         .select('id, nome, link')
         .eq('id', id)
 
-    let r = registro[0]
+    let r = registro.data[0]
     let nome = r.nome
     let link = r.link
 
@@ -201,7 +201,7 @@ async function pagina_individual_checklist(config){
 
     desafios = await query
 
-    document.getElementById('quantidade_resultados').innerHTML = `${desafios.length} Desafios`
+    document.getElementById('quantidade_resultados').innerHTML = `${desafios.data.length} Desafios`
 
     finalizado = {
         '': 'Status',
@@ -211,9 +211,9 @@ async function pagina_individual_checklist(config){
     
     document.getElementById('desafio_status').value = finalizado
 
-    for(let c1 = 0; c1 < desafios.length; c1++){
+    for(let c1 = 0; c1 < desafios.data.length; c1++){
         let registro_id = `registro${c1}`
-        let r = desafios[c1]
+        let r = desafios.data[c1]
         let id_desafio = r.id
         let nome = r.nome
         let descricao = r.descricao
@@ -400,7 +400,7 @@ async function pagina_individual_editar(id){
         .select(` id, nome, tipo, desafios, finalizado, comprado, preco, categorias, link, favorito`)
         .eq('id', id)
 
-    let r = registros[0]
+    let r = registros.data[0]
 
     document.getElementById('nome').value = r['nome']
     document.getElementById('tipo').value = r['tipo']
@@ -416,8 +416,8 @@ async function pagina_individual_editar(id){
         .select('*')
         .eq('id_tempo_livre', id)
 
-    for(let c1 = 0; c1 < dicas.length; c1++){
-        let r = dicas[c1]
+    for(let c1 = 0; c1 < dicas.data.length; c1++){
+        let r = dicas.data[c1]
         let id_dica = r.id
         let titulo = r.titulo
         let descricao = r.descricao
