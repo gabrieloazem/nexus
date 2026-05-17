@@ -107,7 +107,7 @@ async function carregarRecursos(){
 
     let registros = await query
     
-    let quantidade = registros.length
+    let quantidade = registros.data.length
     valorFinal = 0
     
     let total_recursos = 0
@@ -124,9 +124,9 @@ async function carregarRecursos(){
     let prejuizo = 0
     
     valorRestante = 3850
-    for(let c1 = 0; c1 < registros.length; c1++){
+    for(let c1 = 0; c1 < registros.data.length; c1++){
         let idRegistro = `Registro${c1}`
-        let r = registros[c1]
+        let r = registros.data[c1]
         let id = r.id
         let dataCompra = r.data_compra
         let data = r.dataPagamento

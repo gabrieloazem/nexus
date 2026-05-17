@@ -194,6 +194,7 @@ async function pagina_individual_checklist(config){
         .from('tempo_livre_desafios')
         .select('id, nome, descricao, finalizado')
         .eq('id_tempo_livre', id)
+        .order('id', {ascending: true})
 
     if(finalizado){
         query = query.eq('finalizado', finalizado)
@@ -513,6 +514,7 @@ async function mostrar_desafios_editaveis(id_tempo_livre){
 
     let desafios = await  db
         .from('tempo_livre_desafios')
+        .select('id, descricao, nome')
         .eq('id_tempo_livre', id_tempo_livre)
         .order('id', {ascending: true})
 
