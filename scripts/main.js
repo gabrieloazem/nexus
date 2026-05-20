@@ -14,6 +14,8 @@ async function iniciar_sistema(){
     document.getElementById('menu_hamburguer').addEventListener('click', async() => {
         await carregar_pagina({nome: 'menu_mobile'})
     })
+
+    await carregar_pagina({ nome: 'checklist' })
 } 
 
 iniciar_sistema()
