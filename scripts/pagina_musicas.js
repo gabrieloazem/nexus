@@ -330,7 +330,7 @@ paginas['editarMusica'] = {
 
             <div class="f w-98 ml-1 mt-1">
                 <label class="f w-100 font-09">Conteúdo</label>
-                <textarea id="filtro_dados" class="f w-100 h-20 ml-0 mt-02 borda-radius-5px borda-none pl-1"></textarea>
+                <textarea id="filtro_dados" class="f w-100 hr-20 ml-0 mt-02 borda-radius-5px borda-none pl-1"></textarea>
             </div>
 
             <div class="f w-98 ml-1 mt-1">
