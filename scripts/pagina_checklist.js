@@ -90,7 +90,7 @@ paginas['checklist'] = {
                 let ocultar = '';
                 let alinhamento = 'e';
                 if (tarefa == '') { ocultar = 'none'; }
-                if (tarefa.includes('##')) { alinhamento = 'c'; }
+                if (tarefa.includes('##')) { alinhamento = 'e'; }
 
                 let cor = get_cor(tarefa);
                 tarefa = limpar_tarefa(tarefa);
