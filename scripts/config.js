@@ -1,6 +1,21 @@
 let logado = 'N'
 let senha = 'tsu'
 
+const app = {
+
+    id: {
+        disciplina: null,
+        pergunta: null
+    },
+
+    paginacao: {
+        dados: [],
+        quantidade: 0,
+        ponteiro: 0,
+    },
+
+}
+
 function obterDataAtual(){
     return new Date().toISOString().split('T')[0];
 }
