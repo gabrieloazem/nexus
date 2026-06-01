@@ -70,8 +70,10 @@ async function carregar_perguntas(){
 }
 
 function exibir_pergunta(){
-    let pergunta = app.paginacao.dados[app.paginacao.ponteiro].pergunta
-    let resposta = app.paginacao.dados[app.paginacao.ponteiro].resposta
+    if(app.paginacao.total == 0) return
+
+    let pergunta = app.paginacao.dados[app.paginacao.ponteiro].pergunta || ''
+    let resposta = app.paginacao.dados[app.paginacao.ponteiro].resposta || ''
 
     document.getElementById('pergunta').value = pergunta
     document.getElementById('resposta').value = resposta
@@ -99,6 +101,8 @@ async function atualizar_pergunta(){
             resposta: resposta
         }) 
         .eq('id', id);
+
+    alert('Pergunta atualizada !')
 }
 
 async function pergunta_seguinte(){
