@@ -1,0 +1,652 @@
+<!DOCTYPE html>
+<html lang="pt-BR" class="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nexus</title>
+    <!-- Tailwind CSS v4 via CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+    <style type="text/tailwindcss">
+        @custom-variant dark (&:where(.dark, .dark *));
+    </style>
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+</head>
+<body class="bg-gray-100 dark:bg-gray-900 text-gray-800 dark:text-gray-100 min-h-screen transition-colors duration-200 flex flex-col">
+
+    <!-- Header -->
+    <header class="bg-white dark:bg-gray-800 shadow-sm border-b border-gray-200 dark:border-gray-700">
+        <div class="max-w-4xl mx-auto px-4 py-4 flex justify-between items-center">
+            <h1 class="text-xl font-bold flex items-center gap-2">
+                <i class="ph ph-squares-four text-indigo-600 dark:text-indigo-400 text-2xl"></i> Nexus
+            </h1>
+            <div class="flex items-center gap-2">
+                <button onclick="toggleDarkMode()" class="p-2 rounded-lg bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 transition cursor-pointer">
+                    <i class="ph ph-sun dark:hidden text-xl text-amber-500"></i>
+                    <i class="ph ph-moon hidden dark:block text-xl text-indigo-300"></i>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Navegação Principal (Abas de Módulos) -->
+    <div class="bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 shadow-xs">
+        <div class="max-w-4xl mx-auto px-4 flex gap-6 overflow-x-auto">
+            <button onclick="switchMainModule('dashboard')" id="main-tab-dashboard" class="py-3 font-medium text-sm border-b-2 border-indigo-600 text-indigo-600 dark:text-indigo-400 flex items-center gap-2 cursor-pointer shrink-0">
+                <i class="ph ph-chart-pie-slice text-lg"></i> Dashboard
+            </button>
+            <button onclick="switchMainModule('tarefas')" id="main-tab-tarefas" class="py-3 font-medium text-sm border-b-2 border-transparent text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 flex items-center gap-2 cursor-pointer shrink-0">
+                <i class="ph ph-check-square text-lg"></i> Tarefas
+            </button>
+            <button onclick="switchMainModule('anotacoes')" id="main-tab-anotacoes" class="py-3 font-medium text-sm border-b-2 border-transparent text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 flex items-center gap-2 cursor-pointer shrink-0">
+                <i class="ph ph-notepad text-lg"></i> Anotações
+            </button>
+            <button onclick="switchMainModule('financas')" id="main-tab-financas" class="py-3 font-medium text-sm border-b-2 border-transparent text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 flex items-center gap-2 cursor-pointer shrink-0">
+                <i class="ph ph-wallet text-lg"></i> Finanças
+            </button>
+            <button onclick="switchMainModule('aniversarios')" id="main-tab-aniversarios" class="py-3 font-medium text-sm border-b-2 border-transparent text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 flex items-center gap-2 cursor-pointer shrink-0">
+                <i class="ph ph-cake text-lg"></i> Aniversários
+            </button>
+            <button onclick="switchMainModule('musicas')" id="main-tab-musicas" class="py-3 font-medium text-sm border-b-2 border-transparent text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 flex items-center gap-2 cursor-pointer shrink-0">
+                <i class="ph ph-music-notes text-lg"></i> Músicas
+            </button>
+            <button onclick="switchMainModule('senhas')" id="main-tab-senhas" class="py-3 font-medium text-sm border-b-2 border-transparent text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 flex items-center gap-2 cursor-pointer shrink-0">
+                <i class="ph ph-lock-key text-lg"></i> Senhas
+            </button>
+        </div>
+    </div>
+
+    <!-- Main Container -->
+    <main class="max-w-4xl mx-auto px-4 py-6 flex-1 w-full flex flex-col gap-6">
+
+        <!-- ================= MÓDULO DASHBOARD ================= -->
+        <div id="module-dashboard" class="flex flex-col gap-6">
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                <div class="bg-white dark:bg-gray-800 p-5 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 flex flex-col gap-1">
+                    <span class="text-xs font-semibold text-gray-400 uppercase tracking-wider">Total de Tarefas</span>
+                    <span id="dashTotalTasks" class="text-2xl font-bold text-indigo-600 dark:text-indigo-400">0</span>
+                    <span id="dashSubTasks" class="text-xs text-gray-500">0 pendentes, 0 realizadas</span>
+                </div>
+                <div class="bg-white dark:bg-gray-800 p-5 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 flex flex-col gap-1">
+                    <span class="text-xs font-semibold text-gray-400 uppercase tracking-wider">Total de Anotações</span>
+                    <span id="dashTotalNotes" class="text-2xl font-bold text-indigo-600 dark:text-indigo-400">0</span>
+                    <span id="dashSubNotes" class="text-xs text-gray-500">Em 0 categorias</span>
+                </div>
+                <div class="bg-white dark:bg-gray-800 p-5 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 flex flex-col gap-1">
+                    <span class="text-xs font-semibold text-gray-400 uppercase tracking-wider">Balanço do Mês</span>
+                    <span id="dashFinanceBalance" class="text-2xl font-bold text-indigo-600 dark:text-indigo-400">R$ 0,00</span>
+                    <span id="dashSubFinance" class="text-xs text-gray-500">Entradas: R$ 0,00 | Saídas: R$ 0,00</span>
+                </div>
+                <div class="bg-white dark:bg-gray-800 p-5 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 flex flex-col gap-1">
+                    <span class="text-xs font-semibold text-gray-400 uppercase tracking-wider">Aniversários deste Mês</span>
+                    <span id="dashTotalBirthdays" class="text-2xl font-bold text-indigo-600 dark:text-indigo-400">0</span>
+                    <span id="dashSubBirthdays" class="text-xs text-gray-500">0 cadastrados no total</span>
+                </div>
+                <div class="bg-white dark:bg-gray-800 p-5 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 flex flex-col gap-1">
+                    <span class="text-xs font-semibold text-gray-400 uppercase tracking-wider">Músicas</span>
+                    <span id="dashTotalSongs" class="text-2xl font-bold text-indigo-600 dark:text-indigo-400">0</span>
+                    <span id="dashSubSongs" class="text-xs text-gray-500">0 finalizadas, 0 favoritas</span>
+                </div>
+                <div class="bg-white dark:bg-gray-800 p-5 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 flex flex-col gap-1">
+                    <span class="text-xs font-semibold text-gray-400 uppercase tracking-wider">Senhas</span>
+                    <span id="dashTotalPasswords" class="text-2xl font-bold text-indigo-600 dark:text-indigo-400">0</span>
+                    <span class="text-xs text-gray-500">cadastradas</span>
+                </div>
+            </div>
+            <div class="bg-white dark:bg-gray-800 p-5 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 flex flex-col gap-3">
+                <h3 class="text-sm font-bold">Bem-vindo ao Nexus</h3>
+                <p class="text-xs text-gray-500 dark:text-gray-400 leading-relaxed">
+                    Painel unificado de produtividade e organização pessoal. Utilize as abas acima para navegar entre tarefas, notas, finanças, aniversários, músicas e senhas.
+                </p>
+            </div>
+        </div>
+
+        <!-- ================= MÓDULO TAREFAS ================= -->
+        <div id="module-tarefas" class="hidden flex flex-col gap-6">
+            <div class="flex flex-wrap justify-between items-center gap-2 bg-white dark:bg-gray-800 p-3 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
+                <span class="text-xs font-semibold text-gray-500 dark:text-gray-400">Gerenciamento de Tarefas</span>
+                <div class="flex flex-wrap justify-end gap-2">
+                    <button data-backup-file-export onclick="backupExport('tarefas')" class="px-3 py-1.5 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-xs font-medium rounded-lg transition cursor-pointer flex items-center gap-1">
+                        <i class="ph ph-download-simple"></i> Exportar
+                    </button>
+                    <button onclick="backupCopy('tarefas')" class="px-3 py-1.5 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-xs font-medium rounded-lg transition cursor-pointer flex items-center gap-1">
+                        <i class="ph ph-copy"></i> Copiar
+                    </button>
+                    <label class="px-3 py-1.5 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-xs font-medium rounded-lg transition cursor-pointer flex items-center gap-1">
+                        <i class="ph ph-upload-simple"></i> Importar
+                        <input type="file" accept=".json" onchange="backupImportFile('tarefas', event)" class="hidden">
+                    </label>
+                    <button onclick="backupPaste('tarefas')" class="px-3 py-1.5 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-xs font-medium rounded-lg transition cursor-pointer flex items-center gap-1">
+                        <i class="ph ph-clipboard-text"></i> Colar
+                    </button>
+                </div>
+            </div>
+
+            <section class="bg-white dark:bg-gray-800 p-4 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
+                <h2 class="text-sm font-semibold text-gray-500 dark:text-gray-400 mb-3">Adicionar Tarefas (1 por linha)</h2>
+                <form onsubmit="handleBatchAdd(event)" class="flex flex-col gap-3">
+                    <textarea id="batchInput" rows="2" placeholder="Digite as tarefas aqui (cada linha virará uma tarefa)..." class="w-full p-3 rounded-lg border border-gray-300 dark:border-gray-600 bg-transparent text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"></textarea>
+                    <div class="flex flex-col sm:flex-row justify-between items-center gap-3">
+                        <div class="flex items-center gap-2 w-full sm:w-auto">
+                            <label for="batchDate" class="text-xs text-gray-500 dark:text-gray-400">Data padrão:</label>
+                            <input type="date" id="batchDate" class="p-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-transparent text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                        </div>
+                        <button type="submit" class="w-full sm:w-auto px-4 py-2 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-medium rounded-lg transition flex items-center justify-center gap-2 cursor-pointer">
+                            <i class="ph ph-plus text-lg"></i> Adicionar Tarefa(s)
+                        </button>
+                    </div>
+                </form>
+            </section>
+
+            <!-- Abas de Status e Filtro por Data -->
+            <div class="flex flex-col sm:flex-row justify-between items-stretch sm:items-center gap-4 bg-white dark:bg-gray-800 p-3 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
+                <div class="flex border-b sm:border-b-0 border-gray-200 dark:border-gray-700 gap-6 text-sm font-medium">
+                    <button onclick="setTaskTab('todas')" id="task-tab-todas" class="pb-2 sm:pb-0 border-b-2 sm:border-b-0 border-indigo-600 text-indigo-600 dark:text-indigo-400 cursor-pointer">Todas</button>
+                    <button onclick="setTaskTab('pendentes')" id="task-tab-pendentes" class="pb-2 sm:pb-0 border-b-2 sm:border-b-0 border-transparent text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 cursor-pointer">Pendentes</button>
+                    <button onclick="setTaskTab('realizadas')" id="task-tab-realizadas" class="pb-2 sm:pb-0 border-b-2 sm:border-b-0 border-transparent text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 cursor-pointer">Realizadas</button>
+                </div>
+                <div class="flex items-center gap-2">
+                    <label for="taskDateFilter" class="text-xs text-gray-500 dark:text-gray-400">Filtrar Data:</label>
+                    <input type="date" id="taskDateFilter" onchange="renderTasks()" class="p-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-transparent text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                </div>
+            </div>
+
+            <section class="flex flex-col gap-3" id="taskList">
+                <!-- Renderizado via JS -->
+            </section>
+        </div>
+
+        <!-- ================= MÓDULO ANOTAÇÕES ================= -->
+        <div id="module-anotacoes" class="hidden flex flex-col gap-6">
+            <div class="flex flex-wrap justify-between items-center gap-2 bg-white dark:bg-gray-800 p-3 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
+                <span class="text-xs font-semibold text-gray-500 dark:text-gray-400">Gerenciamento de Anotações</span>
+                <div class="flex flex-wrap justify-end gap-2">
+                    <button data-backup-file-export onclick="backupExport('anotacoes')" class="px-3 py-1.5 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-xs font-medium rounded-lg transition cursor-pointer flex items-center gap-1">
+                        <i class="ph ph-download-simple"></i> Exportar
+                    </button>
+                    <button onclick="backupCopy('anotacoes')" class="px-3 py-1.5 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-xs font-medium rounded-lg transition cursor-pointer flex items-center gap-1">
+                        <i class="ph ph-copy"></i> Copiar
+                    </button>
+                    <label class="px-3 py-1.5 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-xs font-medium rounded-lg transition cursor-pointer flex items-center gap-1">
+                        <i class="ph ph-upload-simple"></i> Importar
+                        <input type="file" accept=".json" onchange="backupImportFile('anotacoes', event)" class="hidden">
+                    </label>
+                    <button onclick="backupPaste('anotacoes')" class="px-3 py-1.5 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-xs font-medium rounded-lg transition cursor-pointer flex items-center gap-1">
+                        <i class="ph ph-clipboard-text"></i> Colar
+                    </button>
+                </div>
+            </div>
+
+            <div class="flex flex-col sm:flex-row justify-between items-stretch sm:items-center gap-4">
+                <button onclick="openNoteModal()" class="px-4 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-medium rounded-lg transition flex items-center justify-center gap-2 cursor-pointer shadow-sm">
+                    <i class="ph ph-plus text-lg"></i> Nova Anotação
+                </button>
+                <div class="flex items-center gap-2">
+                    <label for="categoryFilter" class="text-xs text-gray-500 dark:text-gray-400">Filtrar Categoria:</label>
+                    <select id="categoryFilter" onchange="renderNotes()" class="p-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                        <!-- Preenchido via JS -->
+                    </select>
+                </div>
+            </div>
+
+            <section class="grid grid-cols-1 sm:grid-cols-2 gap-4" id="notesGrid">
+                <!-- Renderizado via JS -->
+            </section>
+        </div>
+
+        <!-- ================= MÓDULO FINANÇAS ================= -->
+        <div id="module-financas" class="hidden flex flex-col gap-6">
+            <div class="flex flex-wrap justify-between items-center gap-2 bg-white dark:bg-gray-800 p-3 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
+                <span class="text-xs font-semibold text-gray-500 dark:text-gray-400">Gerenciamento Financeiro</span>
+                <div class="flex flex-wrap justify-end gap-2">
+                    <button data-backup-file-export onclick="backupExport('financas')" class="px-3 py-1.5 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-xs font-medium rounded-lg transition cursor-pointer flex items-center gap-1">
+                        <i class="ph ph-download-simple"></i> Exportar
+                    </button>
+                    <button onclick="backupCopy('financas')" class="px-3 py-1.5 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-xs font-medium rounded-lg transition cursor-pointer flex items-center gap-1">
+                        <i class="ph ph-copy"></i> Copiar
+                    </button>
+                    <label class="px-3 py-1.5 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-xs font-medium rounded-lg transition cursor-pointer flex items-center gap-1">
+                        <i class="ph ph-upload-simple"></i> Importar
+                        <input type="file" accept=".json" onchange="backupImportFile('financas', event)" class="hidden">
+                    </label>
+                    <button onclick="backupPaste('financas')" class="px-3 py-1.5 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-xs font-medium rounded-lg transition cursor-pointer flex items-center gap-1">
+                        <i class="ph ph-clipboard-text"></i> Colar
+                    </button>
+                </div>
+            </div>
+
+            <div class="flex flex-col sm:flex-row justify-between items-stretch sm:items-center gap-4">
+                <button onclick="openFinanceModal()" class="px-4 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-medium rounded-lg transition flex items-center justify-center gap-2 cursor-pointer shadow-sm">
+                    <i class="ph ph-plus text-lg"></i> Nova Transação
+                </button>
+                <div class="flex items-center justify-center gap-2">
+                    <button onclick="changeFinanceMonth(-1)" class="p-2 rounded-lg bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700 transition cursor-pointer" title="Mês anterior"><i class="ph ph-caret-left text-lg"></i></button>
+                    <span id="financeMonthLabel" class="min-w-40 text-center text-sm font-bold"></span>
+                    <button onclick="changeFinanceMonth(1)" class="p-2 rounded-lg bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 hover:bg-gray-100 dark:hover:bg-gray-700 transition cursor-pointer" title="Próximo mês"><i class="ph ph-caret-right text-lg"></i></button>
+                    <input type="hidden" id="financeMonthFilter">
+                </div>
+            </div>
+
+            <!-- Resumo do Mês Selecionado -->
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                <div class="bg-white dark:bg-gray-800 p-4 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 flex flex-col gap-1">
+                    <span class="text-xs font-semibold text-gray-400 uppercase">Total Entradas</span>
+                    <span id="finTotalIncome" class="text-xl font-bold text-emerald-600 dark:text-emerald-400">R$ 0,00</span>
+                </div>
+                <div class="bg-white dark:bg-gray-800 p-4 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 flex flex-col gap-1">
+                    <span class="text-xs font-semibold text-gray-400 uppercase">Total Saídas</span>
+                    <span id="finTotalExpense" class="text-xl font-bold text-red-600 dark:text-red-400">R$ 0,00</span>
+                </div>
+                <div class="bg-white dark:bg-gray-800 p-4 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 flex flex-col gap-1">
+                    <span class="text-xs font-semibold text-gray-400 uppercase">Balanço</span>
+                    <span id="finTotalBalance" class="text-xl font-bold">R$ 0,00</span>
+                </div>
+            </div>
+
+            <section class="flex flex-col gap-3" id="financeList">
+                <!-- Renderizado via JS -->
+            </section>
+        </div>
+
+        <!-- ================= MÓDULO ANIVERSÁRIOS ================= -->
+        <div id="module-aniversarios" class="hidden flex flex-col gap-6">
+            <div class="flex flex-wrap justify-between items-center gap-2 bg-white dark:bg-gray-800 p-3 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
+                <span class="text-xs font-semibold text-gray-500 dark:text-gray-400">Gerenciamento de Aniversários</span>
+                <div class="flex flex-wrap justify-end gap-2">
+                    <button data-backup-file-export onclick="backupExport('aniversarios')" class="px-3 py-1.5 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-xs font-medium rounded-lg transition cursor-pointer flex items-center gap-1">
+                        <i class="ph ph-download-simple"></i> Exportar
+                    </button>
+                    <button onclick="backupCopy('aniversarios')" class="px-3 py-1.5 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-xs font-medium rounded-lg transition cursor-pointer flex items-center gap-1">
+                        <i class="ph ph-copy"></i> Copiar
+                    </button>
+                    <label class="px-3 py-1.5 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-xs font-medium rounded-lg transition cursor-pointer flex items-center gap-1">
+                        <i class="ph ph-upload-simple"></i> Importar
+                        <input type="file" accept=".json" onchange="backupImportFile('aniversarios', event)" class="hidden">
+                    </label>
+                    <button onclick="backupPaste('aniversarios')" class="px-3 py-1.5 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-xs font-medium rounded-lg transition cursor-pointer flex items-center gap-1">
+                        <i class="ph ph-clipboard-text"></i> Colar
+                    </button>
+                </div>
+            </div>
+
+            <div class="flex flex-col sm:flex-row justify-between items-stretch sm:items-center gap-4">
+                <button onclick="openBirthdayModal()" class="px-4 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-medium rounded-lg transition flex items-center justify-center gap-2 cursor-pointer shadow-sm">
+                    <i class="ph ph-plus text-lg"></i> Novo Aniversariante
+                </button>
+                <div class="flex items-center gap-2">
+                    <label for="birthdayMonthFilter" class="text-xs text-gray-500 dark:text-gray-400">Filtrar Mês:</label>
+                    <select id="birthdayMonthFilter" onchange="renderBirthdays()" class="p-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                        <option value="todos">Todos os Meses</option>
+                        <option value="1">Janeiro</option>
+                        <option value="2">Fevereiro</option>
+                        <option value="3">Março</option>
+                        <option value="4">Abril</option>
+                        <option value="5">Maio</option>
+                        <option value="6">Junho</option>
+                        <option value="7">Julho</option>
+                        <option value="8">Agosto</option>
+                        <option value="9">Setembro</option>
+                        <option value="10">Outubro</option>
+                        <option value="11">Novembro</option>
+                        <option value="12">Dezembro</option>
+                    </select>
+                </div>
+            </div>
+
+            <section class="grid grid-cols-1 sm:grid-cols-2 gap-4" id="birthdaysGrid">
+                <!-- Renderizado via JS -->
+            </section>
+        </div>
+
+
+        <!-- ================= MÓDULO MÚSICAS ================= -->
+        <div id="module-musicas" class="hidden flex flex-col gap-6">
+            <div id="songListView" class="flex flex-col gap-6">
+                <div class="flex flex-wrap justify-between items-center gap-2 bg-white dark:bg-gray-800 p-3 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
+                    <span class="text-xs font-semibold text-gray-500 dark:text-gray-400">Gerenciamento de Músicas</span>
+                    <div class="flex flex-wrap justify-end gap-2">
+                        <button data-backup-file-export onclick="backupExport('musicas')" class="px-3 py-1.5 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-xs font-medium rounded-lg transition cursor-pointer flex items-center gap-1">
+                            <i class="ph ph-download-simple"></i> Exportar
+                        </button>
+                        <button onclick="backupCopy('musicas')" class="px-3 py-1.5 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-xs font-medium rounded-lg transition cursor-pointer flex items-center gap-1">
+                            <i class="ph ph-copy"></i> Copiar
+                        </button>
+                        <label class="px-3 py-1.5 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-xs font-medium rounded-lg transition cursor-pointer flex items-center gap-1">
+                            <i class="ph ph-upload-simple"></i> Importar
+                            <input type="file" accept=".json" onchange="backupImportFile('musicas', event)" class="hidden">
+                        </label>
+                        <button onclick="backupPaste('musicas')" class="px-3 py-1.5 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-xs font-medium rounded-lg transition cursor-pointer flex items-center gap-1">
+                            <i class="ph ph-clipboard-text"></i> Colar
+                        </button>
+                    </div>
+                </div>
+    
+                <div class="flex flex-col gap-3">
+                    <div class="flex flex-col sm:flex-row gap-2">
+                    <button onclick="openSongModal()" class="px-4 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-medium rounded-lg transition flex items-center justify-center gap-2 cursor-pointer shadow-sm sm:flex-1">
+                        <i class="ph ph-plus text-lg"></i> Nova Música
+                    </button>
+                    <!-- TEMPORÁRIO: remover este botão e a função markAllSongsInProgress() em musicas.js quando não for mais necessário -->
+                    <button id="btnTempAllInProgress" onclick="markAllSongsInProgress()" class="px-3 py-2.5 border border-dashed border-amber-400 text-amber-600 dark:text-amber-400 hover:bg-amber-50 dark:hover:bg-amber-950/30 text-xs font-medium rounded-lg transition cursor-pointer flex items-center justify-center gap-1" title="Botão temporário">
+                        <i class="ph ph-arrow-counter-clockwise"></i> Todas em andamento (temporário)
+                    </button>
+                </div>
+                    <div class="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                        <input type="search" id="songSearch" oninput="renderSongs()" placeholder="Buscar por nome..." class="p-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                        <select id="songStatusFilter" onchange="renderSongs()" class="p-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                            <option value="todas">Todas</option>
+                            <option value="favoritas">Favoritas</option>
+                            <option value="finalizadas">Finalizadas</option>
+                            <option value="andamento">Em andamento</option>
+                        </select>
+                        <select id="songKeyFilter" onchange="renderSongs()" class="p-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                            <option value="todas">Todas as tonalidades</option>
+                        </select>
+                    </div>
+                    <span id="songCount" class="text-xs text-gray-400"></span>
+                </div>
+    
+                <section class="flex flex-col gap-2" id="songList">
+                    <!-- Renderizado via JS -->
+                </section>
+            </div>
+
+            <div id="songReaderView" class="hidden flex flex-col gap-4">
+                <div class="flex items-center justify-between gap-2 bg-white dark:bg-gray-800 p-3 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
+                    <button onclick="closeSongView()" class="px-3 py-1.5 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-xs font-medium rounded-lg transition cursor-pointer flex items-center gap-1">
+                        <i class="ph ph-arrow-left"></i> Voltar
+                    </button>
+                    <div class="flex items-center gap-1">
+                        <button id="songReaderFav" onclick="toggleSongFavoriteFromView()" class="p-1.5 rounded-md text-lg leading-none text-gray-300 transition cursor-pointer" title="Favoritar">♡</button>
+                        <button onclick="editSongFromView()" class="p-2 rounded-lg text-gray-500 hover:text-indigo-600 hover:bg-gray-100 dark:hover:bg-gray-700 transition cursor-pointer" title="Editar"><i class="ph ph-pencil-simple text-base"></i></button>
+                    </div>
+                </div>
+                <div class="bg-white dark:bg-gray-800 p-5 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 flex flex-col gap-2">
+                    <h2 id="songReaderTitle" class="text-lg font-bold"></h2>
+                    <div id="songReaderMeta" class="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-gray-500 dark:text-gray-400"></div>
+                    <div class="flex flex-wrap items-center gap-2 pt-2 border-t border-gray-100 dark:border-gray-700">
+                        <span class="text-xs font-semibold text-gray-500 dark:text-gray-400">Tom</span>
+                        <button onclick="transposeSongView(-1)" class="w-9 h-9 flex items-center justify-center rounded-lg bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-lg font-bold transition cursor-pointer select-none" title="Diminuir tom (-1 semitom)">&minus;</button>
+                        <span id="songReaderKey" class="min-w-12 text-center text-lg font-bold text-indigo-600 dark:text-indigo-400">—</span>
+                        <button onclick="transposeSongView(1)" class="w-9 h-9 flex items-center justify-center rounded-lg bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-lg font-bold transition cursor-pointer select-none" title="Aumentar tom (+1 semitom)">+</button>
+                        <button id="songReaderKeyReset" onclick="transposeSongView(0)" class="hidden w-9 h-9 items-center justify-center rounded-lg text-gray-500 hover:text-indigo-600 transition cursor-pointer" title="Voltar ao tom original"><i class="ph ph-arrow-counter-clockwise text-base"></i></button>
+                        <span id="songReaderKeyInfo" class="text-xs text-gray-400"></span>
+                    </div>
+                </div>
+                <div id="songReaderContent" class="bg-white dark:bg-gray-800 p-5 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 text-sm leading-relaxed overflow-x-auto"></div>
+            </div>
+        </div>
+
+        <!-- ================= MÓDULO SENHAS ================= -->
+        <div id="module-senhas" class="hidden flex flex-col gap-6">
+            <div class="flex flex-wrap justify-between items-center gap-2 bg-white dark:bg-gray-800 p-3 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700">
+                <span class="text-xs font-semibold text-gray-500 dark:text-gray-400">Gerenciamento de Senhas</span>
+                <div class="flex flex-wrap justify-end gap-2">
+                    <button data-backup-file-export onclick="backupExport('senhas')" class="px-3 py-1.5 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-xs font-medium rounded-lg transition cursor-pointer flex items-center gap-1">
+                        <i class="ph ph-download-simple"></i> Exportar
+                    </button>
+                    <button onclick="backupCopy('senhas')" class="px-3 py-1.5 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-xs font-medium rounded-lg transition cursor-pointer flex items-center gap-1">
+                        <i class="ph ph-copy"></i> Copiar
+                    </button>
+                    <label class="px-3 py-1.5 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-xs font-medium rounded-lg transition cursor-pointer flex items-center gap-1">
+                        <i class="ph ph-upload-simple"></i> Importar
+                        <input type="file" accept=".json" onchange="backupImportFile('senhas', event)" class="hidden">
+                    </label>
+                    <button onclick="backupPaste('senhas')" class="px-3 py-1.5 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-xs font-medium rounded-lg transition cursor-pointer flex items-center gap-1">
+                        <i class="ph ph-clipboard-text"></i> Colar
+                    </button>
+                </div>
+            </div>
+
+            <div class="flex flex-col sm:flex-row justify-between items-stretch sm:items-center gap-4">
+                <button onclick="openPasswordModal()" class="px-4 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-medium rounded-lg transition flex items-center justify-center gap-2 cursor-pointer shadow-sm">
+                    <i class="ph ph-plus text-lg"></i> Nova Senha
+                </button>
+                <input type="search" id="passwordSearch" oninput="renderPasswords()" placeholder="Buscar sistema ou usuário..." class="p-2 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+            </div>
+
+            <section class="flex flex-col gap-2" id="passwordList">
+                <!-- Renderizado via JS -->
+            </section>
+        </div>
+    </main>
+
+    <!-- Modal de Tarefas -->
+    <div id="taskModal" class="fixed inset-0 bg-black/50 hidden items-center justify-center p-4 z-50">
+        <div class="bg-white dark:bg-gray-800 rounded-xl max-w-md w-full p-6 shadow-xl border border-gray-200 dark:border-gray-700 flex flex-col gap-4">
+            <h3 class="text-lg font-bold">Editar Tarefa</h3>
+            <form onsubmit="handleSaveTaskModal(event)" class="flex flex-col gap-4">
+                <input type="hidden" id="modalTaskId">
+                <div class="flex flex-col gap-1">
+                    <label class="text-xs text-gray-500 dark:text-gray-400">Título</label>
+                    <input type="text" id="modalTaskTitle" required class="p-2.5 rounded-lg border border-gray-300 dark:border-gray-600 bg-transparent text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                </div>
+                <div class="flex flex-col gap-1">
+                    <label class="text-xs text-gray-500 dark:text-gray-400">Data</label>
+                    <input type="date" id="modalTaskDate" required class="p-2.5 rounded-lg border border-gray-300 dark:border-gray-600 bg-transparent text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                </div>
+                <div class="flex flex-col gap-1">
+                    <label class="text-xs text-gray-500 dark:text-gray-400">Status</label>
+                    <select id="modalTaskStatus" class="p-2.5 rounded-lg border border-gray-300 dark:border-gray-600 bg-transparent text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                        <option value="pendente" class="dark:bg-gray-800">Pendente</option>
+                        <option value="realizada" class="dark:bg-gray-800">Realizada</option>
+                    </select>
+                </div>
+                <div class="flex justify-end gap-2 mt-2">
+                    <button type="button" onclick="closeTaskModal()" class="px-4 py-2 rounded-lg bg-gray-200 dark:bg-gray-700 text-sm font-medium hover:bg-gray-300 dark:hover:bg-gray-600 transition cursor-pointer">Cancelar</button>
+                    <button type="submit" class="px-4 py-2 rounded-lg bg-indigo-600 text-white text-sm font-medium hover:bg-indigo-700 transition cursor-pointer">Salvar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal de Anotações -->
+    <div id="noteModal" class="fixed inset-0 bg-black/50 hidden items-center justify-center p-4 z-50">
+        <div class="bg-white dark:bg-gray-800 rounded-xl max-w-md w-full p-6 shadow-xl border border-gray-200 dark:border-gray-700 flex flex-col gap-4">
+            <h3 id="noteModalTitle" class="text-lg font-bold">Nova Anotação</h3>
+            <form onsubmit="handleSaveNoteModal(event)" class="flex flex-col gap-4">
+                <input type="hidden" id="modalNoteId">
+                <div class="flex flex-col gap-1">
+                    <label class="text-xs text-gray-500 dark:text-gray-400">Categoria</label>
+                    <input type="text" id="modalNoteCategory" list="categoriesList" required placeholder="Ex: Trabalho, Estudos..." class="p-2.5 rounded-lg border border-gray-300 dark:border-gray-600 bg-transparent text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                    <datalist id="categoriesList">
+                        <!-- Preenchido via JS -->
+                    </datalist>
+                </div>
+                <div class="flex flex-col gap-1">
+                    <label class="text-xs text-gray-500 dark:text-gray-400">Título</label>
+                    <input type="text" id="modalNoteTitle" required placeholder="Título da anotação" class="p-2.5 rounded-lg border border-gray-300 dark:border-gray-600 bg-transparent text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                </div>
+                <div class="flex flex-col gap-1">
+                    <label class="text-xs text-gray-500 dark:text-gray-400">Conteúdo</label>
+                    <textarea id="modalNoteContent" rows="4" required placeholder="Escreva sua anotação aqui..." class="w-full p-2.5 rounded-lg border border-gray-300 dark:border-gray-600 bg-transparent text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"></textarea>
+                </div>
+                <div class="flex justify-end gap-2 mt-2">
+                    <button type="button" onclick="closeNoteModal()" class="px-4 py-2 rounded-lg bg-gray-200 dark:bg-gray-700 text-sm font-medium hover:bg-gray-300 dark:hover:bg-gray-600 transition cursor-pointer">Cancelar</button>
+                    <button type="submit" class="px-4 py-2 rounded-lg bg-indigo-600 text-white text-sm font-medium hover:bg-indigo-700 transition cursor-pointer">Salvar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal de Finanças -->
+    <div id="financeModal" class="fixed inset-0 bg-black/50 hidden items-center justify-center p-4 z-50">
+        <div class="bg-white dark:bg-gray-800 rounded-xl max-w-md w-full p-6 shadow-xl border border-gray-200 dark:border-gray-700 flex flex-col gap-4">
+            <h3 id="financeModalTitle" class="text-lg font-bold">Nova Transação</h3>
+            <form onsubmit="handleSaveFinanceModal(event)" class="flex flex-col gap-4">
+                <input type="hidden" id="modalFinanceId">
+                <div class="flex flex-col gap-1">
+                    <label class="text-xs text-gray-500 dark:text-gray-400">Tipo</label>
+                    <select id="modalFinanceType" class="p-2.5 rounded-lg border border-gray-300 dark:border-gray-600 bg-transparent text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                        <option value="entrada" class="dark:bg-gray-800">Entrada</option>
+                        <option value="saida" class="dark:bg-gray-800">Saída</option>
+                    </select>
+                </div>
+                <div class="flex flex-col gap-1">
+                    <label class="text-xs text-gray-500 dark:text-gray-400">Título</label>
+                    <input type="text" id="modalFinanceTitle" required placeholder="Ex: Salário, Aluguel..." class="p-2.5 rounded-lg border border-gray-300 dark:border-gray-600 bg-transparent text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                </div>
+                <div class="grid grid-cols-2 gap-3">
+                    <div class="flex flex-col gap-1">
+                        <label class="text-xs text-gray-500 dark:text-gray-400">Valor (R$)</label>
+                        <input type="number" step="0.01" min="0" id="modalFinanceAmount" required placeholder="0.00" class="p-2.5 rounded-lg border border-gray-300 dark:border-gray-600 bg-transparent text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                    </div>
+                    <div class="flex flex-col gap-1">
+                        <label class="text-xs text-gray-500 dark:text-gray-400">Data</label>
+                        <input type="date" id="modalFinanceDate" required class="p-2.5 rounded-lg border border-gray-300 dark:border-gray-600 bg-transparent text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                    </div>
+                </div>
+                <div class="flex flex-col gap-1">
+                    <label class="text-xs text-gray-500 dark:text-gray-400">Status</label>
+                    <select id="modalFinanceStatus" class="p-2.5 rounded-lg border border-gray-300 dark:border-gray-600 bg-transparent text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                        <option value="pendente" class="dark:bg-gray-800">Pendente</option>
+                        <option value="concluido" class="dark:bg-gray-800">Concluído</option>
+                    </select>
+                </div>
+                <div class="flex items-center gap-2 mt-2">
+                    <button type="button" id="btnDeleteFinance" onclick="deleteFinanceFromModal()" class="hidden px-4 py-2 rounded-lg bg-red-50 dark:bg-red-950/50 text-red-600 dark:text-red-400 text-sm font-medium hover:bg-red-100 dark:hover:bg-red-950 transition cursor-pointer items-center gap-1"><i class="ph ph-trash"></i> Excluir</button>
+                    <div class="flex gap-2 ml-auto">
+                        <button type="button" onclick="closeFinanceModal()" class="px-4 py-2 rounded-lg bg-gray-200 dark:bg-gray-700 text-sm font-medium hover:bg-gray-300 dark:hover:bg-gray-600 transition cursor-pointer">Cancelar</button>
+                        <button type="submit" class="px-4 py-2 rounded-lg bg-indigo-600 text-white text-sm font-medium hover:bg-indigo-700 transition cursor-pointer">Salvar</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal de Aniversários -->
+    <div id="birthdayModal" class="fixed inset-0 bg-black/50 hidden items-center justify-center p-4 z-50">
+        <div class="bg-white dark:bg-gray-800 rounded-xl max-w-md w-full p-6 shadow-xl border border-gray-200 dark:border-gray-700 flex flex-col gap-4">
+            <h3 id="birthdayModalTitle" class="text-lg font-bold">Novo Aniversariante</h3>
+            <form onsubmit="handleSaveBirthdayModal(event)" class="flex flex-col gap-4">
+                <input type="hidden" id="modalBirthdayId">
+                <div class="flex flex-col gap-1">
+                    <label class="text-xs text-gray-500 dark:text-gray-400">Nome</label>
+                    <input type="text" id="modalBirthdayName" required placeholder="Nome do aniversariante" class="p-2.5 rounded-lg border border-gray-300 dark:border-gray-600 bg-transparent text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                </div>
+                <div class="grid grid-cols-2 gap-3">
+                    <div class="flex flex-col gap-1">
+                        <label class="text-xs text-gray-500 dark:text-gray-400">Dia</label>
+                        <input type="number" id="modalBirthdayDay" min="1" max="31" required placeholder="Ex: 15" class="p-2.5 rounded-lg border border-gray-300 dark:border-gray-600 bg-transparent text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                    </div>
+                    <div class="flex flex-col gap-1">
+                        <label class="text-xs text-gray-500 dark:text-gray-400">Mês</label>
+                        <select id="modalBirthdayMonth" required class="p-2.5 rounded-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                            <option value="1">Janeiro</option>
+                            <option value="2">Fevereiro</option>
+                            <option value="3">Março</option>
+                            <option value="4">Abril</option>
+                            <option value="5">Maio</option>
+                            <option value="6">Junho</option>
+                            <option value="7">Julho</option>
+                            <option value="8">Agosto</option>
+                            <option value="9">Setembro</option>
+                            <option value="10">Outubro</option>
+                            <option value="11">Novembro</option>
+                            <option value="12">Dezembro</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="flex justify-end gap-2 mt-2">
+                    <button type="button" onclick="closeBirthdayModal()" class="px-4 py-2 rounded-lg bg-gray-200 dark:bg-gray-700 text-sm font-medium hover:bg-gray-300 dark:hover:bg-gray-600 transition cursor-pointer">Cancelar</button>
+                    <button type="submit" class="px-4 py-2 rounded-lg bg-indigo-600 text-white text-sm font-medium hover:bg-indigo-700 transition cursor-pointer">Salvar</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal Música -->
+    <div id="songModal" class="fixed inset-0 bg-black/50 hidden items-center justify-center p-4 z-50">
+        <div class="bg-white dark:bg-gray-800 rounded-xl max-w-md w-full max-h-[90vh] overflow-y-auto p-6 shadow-xl border border-gray-200 dark:border-gray-700 flex flex-col gap-4">
+            <h3 id="songModalTitle" class="text-lg font-bold">Nova Música</h3>
+            <form onsubmit="handleSaveSongModal(event)" class="flex flex-col gap-4">
+                <input type="hidden" id="modalSongId">
+                <div class="flex border-b border-gray-200 dark:border-gray-700">
+                    <button type="button" id="songTabBtnDados" onclick="switchSongTab('dados')" class="px-4 py-2 text-sm font-medium border-b-2 border-indigo-600 text-indigo-600 dark:text-indigo-400 cursor-pointer">Dados</button>
+                    <button type="button" id="songTabBtnMomentos" onclick="switchSongTab('momentos')" class="px-4 py-2 text-sm font-medium border-b-2 border-transparent text-gray-500 hover:text-gray-700 dark:hover:text-gray-300 cursor-pointer">Momentos</button>
+                </div>
+                <div id="songTabDados" class="flex flex-col gap-4">
+                    <div class="flex flex-col gap-1">
+                        <label class="text-xs text-gray-500 dark:text-gray-400">Nome</label>
+                        <input type="text" id="modalSongName" autocomplete="off" class="p-2.5 rounded-lg border border-gray-300 dark:border-gray-600 bg-transparent text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                    </div>
+                    <div class="grid grid-cols-3 gap-2">
+                        <div class="flex flex-col gap-1">
+                            <label class="text-xs text-gray-500 dark:text-gray-400">Tonalidade</label>
+                            <select id="modalSongKey" class="p-2.5 rounded-lg border border-gray-300 dark:border-gray-600 bg-transparent text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"></select>
+                        </div>
+                        <div class="flex flex-col gap-1">
+                            <label class="text-xs text-gray-500 dark:text-gray-400">Favorita</label>
+                            <select id="modalSongFavorite" class="p-2.5 rounded-lg border border-gray-300 dark:border-gray-600 bg-transparent text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"><option value="Não" class="dark:bg-gray-800">Não</option><option value="Sim" class="dark:bg-gray-800">Sim</option></select>
+                        </div>
+                        <div class="flex flex-col gap-1">
+                            <label class="text-xs text-gray-500 dark:text-gray-400">Finalizada</label>
+                            <select id="modalSongDone" class="p-2.5 rounded-lg border border-gray-300 dark:border-gray-600 bg-transparent text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500"><option value="Não" class="dark:bg-gray-800">Não</option><option value="Sim" class="dark:bg-gray-800">Sim</option></select>
+                        </div>
+                    </div>
+                    <div class="flex flex-col gap-1">
+                        <label class="text-xs text-gray-500 dark:text-gray-400">Cifra</label>
+                        <textarea id="modalSongContent" rows="10" spellcheck="false" class="p-2.5 rounded-lg border border-gray-300 dark:border-gray-600 bg-transparent text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 font-mono whitespace-pre"></textarea>
+                    </div>
+                </div>
+                <div id="songTabMomentos" class="hidden flex flex-col gap-3">
+                    <p class="text-xs text-gray-500 dark:text-gray-400">Marque os momentos em que esta música é usada.</p>
+                    <div id="songMomentsBox" class="grid grid-cols-2 gap-2"></div>
+                </div>
+<div class="flex items-center gap-2 mt-2">
+                    <button type="button" id="btnDeleteSong" onclick="deleteSongFromModal()" class="hidden px-4 py-2 rounded-lg bg-red-50 dark:bg-red-950/50 text-red-600 dark:text-red-400 text-sm font-medium hover:bg-red-100 dark:hover:bg-red-950 transition cursor-pointer items-center gap-1"><i class="ph ph-trash"></i> Excluir</button>
+                    <div class="flex gap-2 ml-auto">
+                        <button type="button" onclick="closeSongModal()" class="px-4 py-2 rounded-lg bg-gray-200 dark:bg-gray-700 text-sm font-medium hover:bg-gray-300 dark:hover:bg-gray-600 transition cursor-pointer">Cancelar</button>
+                        <button type="submit" class="px-4 py-2 rounded-lg bg-indigo-600 text-white text-sm font-medium hover:bg-indigo-700 transition cursor-pointer">Salvar</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Modal Senha -->
+    <div id="passwordModal" class="fixed inset-0 bg-black/50 hidden items-center justify-center p-4 z-50">
+        <div class="bg-white dark:bg-gray-800 rounded-xl max-w-md w-full max-h-[90vh] overflow-y-auto p-6 shadow-xl border border-gray-200 dark:border-gray-700 flex flex-col gap-4">
+            <h3 id="passwordModalTitle" class="text-lg font-bold">Nova Senha</h3>
+            <form onsubmit="handleSavePasswordModal(event)" class="flex flex-col gap-4">
+                <input type="hidden" id="modalPasswordId">
+                <div class="flex flex-col gap-1">
+                    <label class="text-xs text-gray-500 dark:text-gray-400">Sistema</label>
+                    <input type="text" id="modalPasswordSystem" required autocomplete="off" placeholder="Ex: Gmail ( Pessoal )" class="p-2.5 rounded-lg border border-gray-300 dark:border-gray-600 bg-transparent text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500">
+                </div>
+                <div class="flex flex-col gap-1">
+                    <label class="text-xs text-gray-500 dark:text-gray-400">Usuário</label>
+                    <div class="flex gap-2">
+                        <input type="text" id="modalPasswordUser" autocomplete="off" class="p-2.5 rounded-lg border border-gray-300 dark:border-gray-600 bg-transparent text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 flex-1 min-w-0">
+                        <button type="button" onclick="copyFieldValue('modalPasswordUser', this)" class="p-2.5 rounded-lg border border-gray-300 dark:border-gray-600 text-gray-500 hover:text-indigo-600 transition cursor-pointer shrink-0" title="Copiar usuário"><i class="ph ph-copy text-base"></i></button>
+                    </div>
+                </div>
+                <div class="flex flex-col gap-1">
+                    <label class="text-xs text-gray-500 dark:text-gray-400">Senha</label>
+                    <div class="flex gap-2">
+                        <input type="password" id="modalPasswordPass" autocomplete="new-password" class="p-2.5 rounded-lg border border-gray-300 dark:border-gray-600 bg-transparent text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 flex-1 min-w-0">
+                        <button type="button" onclick="togglePasswordVisibility()" class="p-2.5 rounded-lg border border-gray-300 dark:border-gray-600 text-gray-500 hover:text-indigo-600 transition cursor-pointer shrink-0" title="Mostrar/ocultar"><i id="iconTogglePassword" class="ph ph-eye text-base"></i></button>
+                        <button type="button" onclick="copyFieldValue('modalPasswordPass', this)" class="p-2.5 rounded-lg border border-gray-300 dark:border-gray-600 text-gray-500 hover:text-indigo-600 transition cursor-pointer shrink-0" title="Copiar senha"><i class="ph ph-copy text-base"></i></button>
+                    </div>
+                </div>
+                <div class="flex items-center gap-2 mt-2">
+                    <button type="button" id="btnDeletePassword" onclick="deletePasswordFromModal()" class="hidden px-4 py-2 rounded-lg bg-red-50 dark:bg-red-950/50 text-red-600 dark:text-red-400 text-sm font-medium hover:bg-red-100 dark:hover:bg-red-950 transition cursor-pointer items-center gap-1"><i class="ph ph-trash"></i> Excluir</button>
+                    <div class="flex gap-2 ml-auto">
+                        <button type="button" onclick="closePasswordModal()" class="px-4 py-2 rounded-lg bg-gray-200 dark:bg-gray-700 text-sm font-medium hover:bg-gray-300 dark:hover:bg-gray-600 transition cursor-pointer">Cancelar</button>
+                        <button type="submit" class="px-4 py-2 rounded-lg bg-indigo-600 text-white text-sm font-medium hover:bg-indigo-700 transition cursor-pointer">Salvar</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="src/core.js?v=14"></script>
+    <script src="src/dashboard.js?v=14"></script>
+    <script src="src/tarefas.js?v=14"></script>
+    <script src="src/anotacoes.js?v=14"></script>
+    <script src="src/financas.js?v=14"></script>
+    <script src="src/aniversarios.js?v=14"></script>
+    <script src="src/musicas.js?v=14"></script>
+    <script src="src/senhas.js?v=14"></script>
+    <script src="src/backup.js?v=14"></script>
+</body>
+</html>
