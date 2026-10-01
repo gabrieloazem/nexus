@@ -117,16 +117,26 @@ function songMomentLabels(s) {
 // ---------- Carregar da API ----------
 async function loadSongsFromApi() {
     const count = document.getElementById('songCount');
+    const list = document.getElementById('songList');
     if (count) count.innerText = 'Carregando músicas...';
+
     try {
         const data = await apiFetch('/musicas', 'GET');
-        if (Array.isArray(data)) {
-            songs = normalizeSongs(data);
-            localStorage.setItem('nexus_songs', JSON.stringify(songs)); // cópia local (offline)
-        }
+        songs = normalizeSongs(Array.isArray(data) ? data : []);
     } catch (e) {
-        console.error('Erro ao carregar músicas da API, mantendo dados locais.', e);
+        console.error('Erro ao carregar músicas da API.', e);
+        songs = [];
+        if (count) count.innerText = 'Erro ao carregar';
+        list.innerHTML = `
+            <div class="text-center py-8 text-sm text-red-500">
+                Não foi possível carregar as músicas do servidor.
+                <button onclick="loadSongsFromApi()" class="block mx-auto mt-2 px-3 py-1.5 bg-indigo-600 text-white text-xs rounded-lg cursor-pointer">Tentar novamente</button>
+            </div>`;
+        updateSongKeyFilter();
+        renderDashboard();
+        return;
     }
+
     updateSongKeyFilter();
     renderSongs();
     refreshSongView();
@@ -230,7 +240,7 @@ async function handleSaveSongModal(event) {
         closeSongModal();
         saveAndRenderSongs();
     } catch (error) {
-        alert('Erro ao salvar a música na API.');
+        alert('Erro ao salvar a música na API:\n' + error.message);
     } finally {
         savingSong = false;
         if (btn) btn.disabled = false;
@@ -245,7 +255,7 @@ async function deleteSong(id) {
         saveAndRenderSongs();
         return true;
     } catch (error) {
-        alert('Erro ao excluir a música na API.');
+        alert('Erro ao excluir a música na API:\n' + error.message);
         return false;
     }
 }
@@ -350,12 +360,28 @@ function renderSongs() {
 
 // ---------- Formatação da cifra ----------
 function formatSongLine(line, semitones = 0) {
+    // Se não houver transposição, retorna o texto escapado mantendo espaçamento
+    if (!semitones) {
+        return escapeHtml(line);
+    }
+
+    // Divide mantendo os espaços para não desalinhar a cifra
     return line.split(/(\s+)/).map(part => {
-        const m = part.match(/^([^\s^]+)\^([^\s^]*)$/);
-        if (!m) return escapeHtml(part);
-        const nota = escapeHtml(transposeNote(m[1], semitones));
-        const tempo = m[2] ? `<sup class="ml-px text-[0.7em] font-semibold">${escapeHtml(m[2])}</sup>` : '';
-        return `<span class="font-mono font-bold text-black dark:text-white">${nota}${tempo}</span>`;
+        // Ignora espaços em branco
+        if (!part.trim()) return escapeHtml(part);
+
+        // Tenta identificar se o bloco é um acorde (ex: C, Am, F#7, Bbm/Db, etc.)
+        // Expressão que valida se começa com uma nota de A a G seguida opcionalmente de #/b e extensões
+        const chordRegex = /^([A-G][#b♯♭]?[a-zA-Z0-9]*(\/[A-G][#b♯♭]?)?)(.*)$/;
+        const m = part.match(chordRegex);
+
+        if (m) {
+            const notaTransposta = transposeNote(m[1], semitones);
+            const resto = m[3] || '';
+            return `<span class="font-mono font-bold text-black dark:text-white">${escapeHtml(notaTransposta + resto)}</span>`;
+        }
+
+        return escapeHtml(part);
     }).join('');
 }
 
@@ -437,7 +463,12 @@ function closeSongView(fromPopState = false) {
 }
 
 function transposeSongView(delta) {
-    songViewSemitones = delta === 0 ? 0 : (songViewSemitones + delta) % 12;
+    if (delta === 0) {
+        songViewSemitones = 0;
+    } else {
+        // Normaliza para ficar sempre entre 0 e 11 (ou negativo tratado corretamente)
+        songViewSemitones = (((songViewSemitones + delta) % 12) + 12) % 12;
+    }
     refreshSongView();
 }
 
@@ -454,7 +485,6 @@ window.addEventListener('popstate', () => {
 });
 
 function saveAndRenderSongs() {
-    localStorage.setItem('nexus_songs', JSON.stringify(songs));
     updateSongKeyFilter();
     renderSongs();
     refreshSongView();

@@ -2,7 +2,7 @@ let tasks = JSON.parse(localStorage.getItem('nexus_tasks')) || [];
 let notes = JSON.parse(localStorage.getItem('nexus_notes')) || [];
 let finances = JSON.parse(localStorage.getItem('nexus_finances')) || [];
 let birthdays = JSON.parse(localStorage.getItem('nexus_birthdays')) || [];
-let songs = JSON.parse(localStorage.getItem('nexus_songs')) || [];
+let songs = [];
 let passwords = JSON.parse(localStorage.getItem('nexus_passwords')) || [];
 
 let currentTaskTab = 'todas';
@@ -32,7 +32,14 @@ async function apiFetch(endpoint, method = 'GET', data = null) {
     try {
         const response = await fetch(url, options);
         if (!response.ok) {
-            throw new Error(`Erro na API: ${response.statusText} (${response.status})`);
+            let detalhe = response.statusText;
+            try {
+                const corpo = await response.json();
+                if (corpo && corpo.detail) {
+                    detalhe = typeof corpo.detail === 'string' ? corpo.detail : JSON.stringify(corpo.detail);
+                }
+            } catch (_) { /* resposta sem JSON */ }
+            throw new Error(`${response.status} - ${detalhe}`);
         }
         // Se a resposta estiver vazia (ex: 204 No Content), retorna null
         const text = await response.text();
@@ -66,10 +73,6 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Mês atual no filtro de aniversários
     document.getElementById('birthdayMonthFilter').value = todayObj.getMonth() + 1;
-
-    // migra músicas salvas no formato antigo (versão/momento) para o formato atual
-    songs = normalizeSongs(songs);
-    localStorage.setItem('nexus_songs', JSON.stringify(songs));
 
     updateCategoryFilterOptions();
     updateSongKeyFilter();
