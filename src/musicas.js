@@ -10,7 +10,7 @@ function keyIndex(key) {
     return SONG_KEYS.indexOf(k);
 }
 
-// Sobe/desce a tonalidade em semitons. Valores que não são uma das 12 notas ficam como estão.
+// Sobe/desce a tonalidade em semitons. Valores que não são uma das 12 notas ficam como estão.[cite: 3]
 function transposeKey(key, semitones) {
     const idx = keyIndex(key);
     if (idx < 0) return key;
@@ -18,7 +18,7 @@ function transposeKey(key, semitones) {
 }
 
 // Transpõe uma nota em letra (C, F#m, Bb, C/E...). Graus numéricos (1, 3B, +0m, -1B) não mudam,
-// pois são relativos ao tom.
+// pois são relativos ao tom.[cite: 3]
 function transposeNote(nota, semitones) {
     if (!semitones || /^[+-]?\d/.test(nota)) return nota;
     return nota.replace(/(^|\/)([A-G])([#b♯♭]?)/g, (all, sep, letra, acc) => {
@@ -43,7 +43,7 @@ function setSongKeySelect(selected) {
 }
 
 // Momentos em que a música é usada. Para incluir um novo, basta acrescentar uma linha aqui:
-// a chave (snake_case, sem acento) é o campo true/false no backup e na importação.
+// a chave (snake_case, sem acento) é o campo true/false no backup e na importação.[cite: 3]
 const MOMENTOS = [
     { key: 'manha', label: 'Manhã' },
     { key: 'noite', label: 'Noite' },
@@ -65,7 +65,7 @@ function toBool(v) {
     return v === true || v === 'true' || v === 1;
 }
 
-// Arquivos antigos tinham um texto livre ("Manhã Santa Ceia Finalizada"): converte para os campos true/false.
+// Arquivos antigos tinham um texto livre ("Manhã Santa Ceia Finalizada"): converte para os campos true/false.[cite: 3]
 function legacyMoments(text) {
     const t = ' ' + String(text || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase() + ' ';
     const found = {};
@@ -78,7 +78,7 @@ function legacyMoments(text) {
 
 // Formato de cada item:
 // { id, nome, tonalidade, favoritas: 'Sim'|'Não', finalizada: 'Sim'|'Não', manha, noite, hinario, santa_ceia, ..., conteudo }
-// Os campos antigos "versao" e "momento" são descartados.
+// Os campos antigos "versao" e "momento" são descartados.[cite: 3]
 function normalizeSongs(list) {
     const seen = new Set();
     return list
@@ -100,7 +100,7 @@ function normalizeSongs(list) {
                 favoritas: s.favoritas === 'Sim' ? 'Sim' : 'Não',
                 finalizada: s.finalizada === 'Sim' ? 'Sim' : 'Não',
                 ...momentos,
-                // arquivos antigos guardam a quebra de linha como texto "\n"
+                // arquivos antigos guardam a quebra de linha como texto "\n"[cite: 3]
                 conteudo: String(s.conteudo || '').replace(/\\n/g, '\n').replace(/\r\n/g, '\n')
             };
         });
@@ -112,6 +112,22 @@ function songsForExport() {
 
 function songMomentLabels(s) {
     return MOMENTOS.filter(mo => s[mo.key]).map(mo => mo.label);
+}
+
+// ---------- Carregar da API ----------
+async function loadSongsFromApi() {
+    try {
+        const data = await apiFetch('/musicas', 'GET');
+        if (Array.isArray(data)) {
+            songs = normalizeSongs(data);
+            updateCategoryFilterOptions();
+            updateSongKeyFilter();
+            renderSongs();
+            renderDashboard();
+        }
+    } catch (e) {
+        console.error('Erro ao carregar músicas da API, mantendo dados locais.', e);
+    }
 }
 
 // ---------- Modal (abas Dados / Momentos) ----------
@@ -169,7 +185,7 @@ function closeSongModal() {
     document.getElementById('songModal').classList.add('hidden');
 }
 
-function handleSaveSongModal(event) {
+async function handleSaveSongModal(event) {
     event.preventDefault();
     const id = document.getElementById('modalSongId').value;
     const nome = document.getElementById('modalSongName').value.trim();
@@ -189,28 +205,46 @@ function handleSaveSongModal(event) {
         dados[cb.dataset.momento] = cb.checked;
     });
 
-    if (id) {
-        const s = songs.find(item => item.id === id);
-        if (s) Object.assign(s, dados);
-    } else {
-        songs.push({ id: newId(), ...dados });
-    }
+    try {
+        if (id) {
+            await apiFetch(`/musicas/${id}`, 'PUT', dados);
+            const s = songs.find(item => item.id === id);
+            if (s) Object.assign(s, dados);
+        } else {
+            const novaMusica = await apiFetch('/musicas', 'POST', dados);
+            if (novaMusica && novaMusica.id) {
+                songs.push(normalizeSongs([novaMusica])[0]);
+            } else {
+                songs.push({ id: newId(), ...dados });
+            }
+        }
 
-    closeSongModal();
-    saveAndRenderSongs();
+        closeSongModal();
+        saveAndRenderSongs();
+    } catch (error) {
+        alert('Erro ao salvar a música na API.');
+    }
 }
 
-function deleteSong(id) {
+async function deleteSong(id) {
     if (!confirm('Deseja realmente excluir esta música?')) return false;
-    songs = songs.filter(s => s.id !== id);
-    saveAndRenderSongs();
-    return true;
+    try {
+        await apiFetch(`/musicas/${id}`, 'DELETE');
+        songs = songs.filter(s => s.id !== id);
+        saveAndRenderSongs();
+        return true;
+    } catch (error) {
+        alert('Erro ao excluir a música na API.');
+        return false;
+    }
 }
 
 function deleteSongFromModal() {
     const id = document.getElementById('modalSongId').value;
     if (!id) return;
-    if (deleteSong(id)) closeSongModal();
+    deleteSong(id).then(success => {
+        if (success) closeSongModal();
+    });
 }
 
 function updateSongKeyFilter() {
@@ -224,11 +258,19 @@ function updateSongKeyFilter() {
     select.value = keys.includes(current) ? current : 'todas';
 }
 
-function toggleSongFavorite(id) {
+async function toggleSongFavorite(id) {
     const s = songs.find(item => item.id === id);
     if (!s) return;
-    s.favoritas = s.favoritas === 'Sim' ? 'Não' : 'Sim';
-    saveAndRenderSongs();
+    const novaFavorita = s.favoritas === 'Sim' ? 'Não' : 'Sim';
+    
+    try {
+        // Atualiza no backend também se necessário (envia o objeto ou campo específico)
+        await apiFetch(`/musicas/${id}`, 'PUT', { ...s, favoritas: novaFavorita });
+        s.favoritas = novaFavorita;
+        saveAndRenderSongs();
+    } catch (e) {
+        alert('Erro ao atualizar favorito na API.');
+    }
 }
 
 function favoriteButtonHtml(fav) {
@@ -296,7 +338,6 @@ function renderSongs() {
 }
 
 // ---------- Formatação da cifra ----------
-// Notas no formato nota^tempo (ex.: 6^2, 3B^4, C^4): a nota fica com o tempo elevado, tudo em preto.
 function formatSongLine(line, semitones = 0) {
     return line.split(/(\s+)/).map(part => {
         const m = part.match(/^([^\s^]+)\^([^\s^]*)$/);
@@ -311,15 +352,15 @@ function renderSongContent(text, semitones = 0) {
     const lines = String(text || '').replace(/\r\n?/g, '\n').split('\n');
     return lines.map(raw => {
         const t = raw.trim();
-        if (!t) return '<div class="h-3"></div>'; // linha vazia: só espaço
+        if (!t) return '<div class="h-3"></div>';
 
-        if (t.startsWith('*')) { // título de seção
+        if (t.startsWith('*')) {
             const titulo = t.replace(/^\*+\s*/, '');
             if (!titulo) return '<div class="h-3"></div>';
             return `<div class="mt-3 mb-1 pl-2 border-l-4 border-indigo-400 font-sans font-bold text-base text-indigo-600 dark:text-indigo-400">${escapeHtml(titulo)}</div>`;
         }
 
-        if (/^Solo:(\s|$)/.test(t)) { // solo: mostra só o conteúdo, sem a palavra "Solo:"
+        if (/^Solo:(\s|$)/.test(t)) {
             const conteudo = t.replace(/^Solo:\s*/, '');
             if (!conteudo) return '<div class="h-3"></div>';
             return `<div class="font-serif italic text-amber-600 dark:text-amber-400 whitespace-pre-wrap break-words">${formatSongLine(conteudo, semitones)}</div>`;
@@ -373,7 +414,6 @@ function openSongView(id) {
     document.getElementById('songReaderView').classList.remove('hidden');
     refreshSongView();
     window.scrollTo(0, 0);
-    // entrada no histórico: o botão "voltar" do Android também fecha a visualização
     history.pushState({ nexusSongView: true }, '');
 }
 
@@ -385,7 +425,6 @@ function closeSongView(fromPopState = false) {
     if (!fromPopState && history.state && history.state.nexusSongView) history.back();
 }
 
-// delta: +1 sobe um semitom, -1 desce um semitom, 0 volta ao tom original
 function transposeSongView(delta) {
     songViewSemitones = delta === 0 ? 0 : (songViewSemitones + delta) % 12;
     refreshSongView();
@@ -411,7 +450,6 @@ function saveAndRenderSongs() {
     renderDashboard();
 }
 
-// TEMPORÁRIO: coloca todas as músicas com o status "Em andamento". Remover junto com o botão #btnTempAllInProgress.
 function markAllSongsInProgress() {
     if (songs.length === 0) return;
     if (!confirm(`Isso vai marcar TODAS as ${songs.length} músicas como "Em andamento". Continuar?`)) return;

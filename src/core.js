@@ -8,6 +8,36 @@ let passwords = JSON.parse(localStorage.getItem('nexus_passwords')) || [];
 let currentTaskTab = 'todas';
 let currentMainModule = 'dashboard';
 
+// ================= API FETCH CONFIG =================
+const API_BASE_URL = 'https://backend-4lqm.onrender.com';
+
+async function apiFetch(endpoint, method = 'GET', data = null) {
+    const url = `${API_BASE_URL}${endpoint}`;
+    const options = {
+        method: method,
+        headers: {
+            'Content-Type': 'application/json'
+        }
+    };
+
+    if (data && (method === 'POST' || method === 'PUT' || method === 'PATCH')) {
+        options.body = JSON.stringify(data);
+    }
+
+    try {
+        const response = await fetch(url, options);
+        if (!response.ok) {
+            throw new Error(`Erro na API: ${response.statusText} (${response.status})`);
+        }
+        // Se a resposta estiver vazia (ex: 204 No Content), retorna null
+        const text = await response.text();
+        return text ? JSON.parse(text) : null;
+    } catch (error) {
+        console.error('Falha na requisição apiFetch:', error);
+        throw error;
+    }
+}
+
 document.addEventListener('DOMContentLoaded', () => {
     // Carregar tema salvo
     const savedTheme = localStorage.getItem('nexus_theme') || 'light';
