@@ -10,7 +10,7 @@ function keyIndex(key) {
     return SONG_KEYS.indexOf(k);
 }
 
-// Sobe/desce a tonalidade em semitons. Valores que não são uma das 12 notas ficam como estão.[cite: 3]
+// Sobe/desce a tonalidade em semitons. Valores que não são uma das 12 notas ficam como estão.
 function transposeKey(key, semitones) {
     const idx = keyIndex(key);
     if (idx < 0) return key;
@@ -18,7 +18,7 @@ function transposeKey(key, semitones) {
 }
 
 // Transpõe uma nota em letra (C, F#m, Bb, C/E...). Graus numéricos (1, 3B, +0m, -1B) não mudam,
-// pois são relativos ao tom.[cite: 3]
+// pois são relativos ao tom.
 function transposeNote(nota, semitones) {
     if (!semitones || /^[+-]?\d/.test(nota)) return nota;
     return nota.replace(/(^|\/)([A-G])([#b♯♭]?)/g, (all, sep, letra, acc) => {
@@ -43,7 +43,7 @@ function setSongKeySelect(selected) {
 }
 
 // Momentos em que a música é usada. Para incluir um novo, basta acrescentar uma linha aqui:
-// a chave (snake_case, sem acento) é o campo true/false no backup e na importação.[cite: 3]
+// a chave (snake_case, sem acento) é o campo true/false no backup e na importação.
 const MOMENTOS = [
     { key: 'manha', label: 'Manhã' },
     { key: 'noite', label: 'Noite' },
@@ -65,7 +65,7 @@ function toBool(v) {
     return v === true || v === 'true' || v === 1;
 }
 
-// Arquivos antigos tinham um texto livre ("Manhã Santa Ceia Finalizada"): converte para os campos true/false.[cite: 3]
+// Arquivos antigos tinham um texto livre ("Manhã Santa Ceia Finalizada"): converte para os campos true/false.
 function legacyMoments(text) {
     const t = ' ' + String(text || '').normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase() + ' ';
     const found = {};
@@ -78,7 +78,7 @@ function legacyMoments(text) {
 
 // Formato de cada item:
 // { id, nome, tonalidade, favoritas: 'Sim'|'Não', finalizada: 'Sim'|'Não', manha, noite, hinario, santa_ceia, ..., conteudo }
-// Os campos antigos "versao" e "momento" são descartados.[cite: 3]
+// Os campos antigos "versao" e "momento" são descartados.
 function normalizeSongs(list) {
     const seen = new Set();
     return list
@@ -100,7 +100,7 @@ function normalizeSongs(list) {
                 favoritas: s.favoritas === 'Sim' ? 'Sim' : 'Não',
                 finalizada: s.finalizada === 'Sim' ? 'Sim' : 'Não',
                 ...momentos,
-                // arquivos antigos guardam a quebra de linha como texto "\n"[cite: 3]
+                // arquivos antigos guardam a quebra de linha como texto "\n"
                 conteudo: String(s.conteudo || '').replace(/\\n/g, '\n').replace(/\r\n/g, '\n')
             };
         });
@@ -116,18 +116,21 @@ function songMomentLabels(s) {
 
 // ---------- Carregar da API ----------
 async function loadSongsFromApi() {
+    const count = document.getElementById('songCount');
+    if (count) count.innerText = 'Carregando músicas...';
     try {
         const data = await apiFetch('/musicas', 'GET');
         if (Array.isArray(data)) {
             songs = normalizeSongs(data);
-            updateCategoryFilterOptions();
-            updateSongKeyFilter();
-            renderSongs();
-            renderDashboard();
+            localStorage.setItem('nexus_songs', JSON.stringify(songs)); // cópia local (offline)
         }
     } catch (e) {
         console.error('Erro ao carregar músicas da API, mantendo dados locais.', e);
     }
+    updateSongKeyFilter();
+    renderSongs();
+    refreshSongView();
+    renderDashboard();
 }
 
 // ---------- Modal (abas Dados / Momentos) ----------
@@ -185,6 +188,8 @@ function closeSongModal() {
     document.getElementById('songModal').classList.add('hidden');
 }
 
+let savingSong = false;
+
 async function handleSaveSongModal(event) {
     event.preventDefault();
     const id = document.getElementById('modalSongId').value;
@@ -205,24 +210,30 @@ async function handleSaveSongModal(event) {
         dados[cb.dataset.momento] = cb.checked;
     });
 
+    if (savingSong) return;
+    savingSong = true;
+    const btn = document.querySelector('#songModal button[type="submit"]');
+    if (btn) btn.disabled = true;
+
     try {
         if (id) {
-            await apiFetch(`/musicas/${id}`, 'PUT', dados);
-            const s = songs.find(item => item.id === id);
-            if (s) Object.assign(s, dados);
+            const salva = await apiFetch(`/musicas/${id}`, 'PUT', dados);
+            const atualizada = normalizeSongs([salva])[0];
+            const idx = songs.findIndex(item => item.id === id);
+            if (idx >= 0) songs[idx] = atualizada; else songs.push(atualizada);
         } else {
-            const novaMusica = await apiFetch('/musicas', 'POST', dados);
-            if (novaMusica && novaMusica.id) {
-                songs.push(normalizeSongs([novaMusica])[0]);
-            } else {
-                songs.push({ id: newId(), ...dados });
-            }
+            const nova = await apiFetch('/musicas', 'POST', dados);
+            if (!nova || !nova.id) throw new Error('A API não retornou a música criada.');
+            songs.push(normalizeSongs([nova])[0]);
         }
 
         closeSongModal();
         saveAndRenderSongs();
     } catch (error) {
         alert('Erro ao salvar a música na API.');
+    } finally {
+        savingSong = false;
+        if (btn) btn.disabled = false;
     }
 }
 
@@ -262,10 +273,10 @@ async function toggleSongFavorite(id) {
     const s = songs.find(item => item.id === id);
     if (!s) return;
     const novaFavorita = s.favoritas === 'Sim' ? 'Não' : 'Sim';
-    
+
     try {
-        // Atualiza no backend também se necessário (envia o objeto ou campo específico)
-        await apiFetch(`/musicas/${id}`, 'PUT', { ...s, favoritas: novaFavorita });
+        // atualização parcial: só o campo "favoritas"
+        await apiFetch(`/musicas/${id}`, 'PATCH', { favoritas: novaFavorita });
         s.favoritas = novaFavorita;
         saveAndRenderSongs();
     } catch (e) {
@@ -448,6 +459,13 @@ function saveAndRenderSongs() {
     renderSongs();
     refreshSongView();
     renderDashboard();
+}
+
+// Importação de backup: substitui TODAS as músicas do banco pelas do arquivo
+async function importSongsToApi(lista) {
+    const salvas = await apiFetch('/musicas/importar', 'POST', lista);
+    songs = normalizeSongs(Array.isArray(salvas) ? salvas : lista);
+    saveAndRenderSongs();
 }
 
 function markAllSongsInProgress() {

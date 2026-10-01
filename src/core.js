@@ -24,6 +24,11 @@ async function apiFetch(endpoint, method = 'GET', data = null) {
         options.body = JSON.stringify(data);
     }
 
+    // O Render (plano grátis) "dorme" e a 1ª chamada pode demorar: timeout de 60s
+    const controller = new AbortController();
+    const timer = setTimeout(() => controller.abort(), 60000);
+    options.signal = controller.signal;
+
     try {
         const response = await fetch(url, options);
         if (!response.ok) {
@@ -35,6 +40,8 @@ async function apiFetch(endpoint, method = 'GET', data = null) {
     } catch (error) {
         console.error('Falha na requisição apiFetch:', error);
         throw error;
+    } finally {
+        clearTimeout(timer);
     }
 }
 
@@ -73,6 +80,9 @@ document.addEventListener('DOMContentLoaded', () => {
     renderBirthdays();
     renderSongs();
     renderPasswords();
+
+    // músicas: carrega do banco (via API); se falhar, mantém os dados locais
+    loadSongsFromApi();
 });
 
 function toggleDarkMode() {

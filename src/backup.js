@@ -109,7 +109,8 @@ const BACKUP_MODULES = {
     musicas: {
         nome: 'Músicas', arquivo: 'backup_musicas.json',
         get: () => songsForExport(), normalizar: normalizeSongs,
-        set: d => { songs = d; }, salvar: () => saveAndRenderSongs()
+        set: d => { songs = d; }, salvar: () => saveAndRenderSongs(),
+        aplicar: importSongsToApi // grava no banco via API (substitui tudo)
     },
     senhas: {
         nome: 'Senhas', arquivo: 'backup_senhas.json',
@@ -136,7 +137,7 @@ async function backupCopy(key) {
 }
 
 // Valida, confirma e restaura a partir do texto do JSON
-function backupImportText(key, text) {
+async function backupImportText(key, text) {
     const m = BACKUP_MODULES[key];
     let data;
     try {
@@ -162,8 +163,18 @@ function backupImportText(key, text) {
         return false;
     }
 
-    m.set(novo);
-    m.salvar();
+    if (m.aplicar) {
+        try {
+            await m.aplicar(novo);
+        } catch (err) {
+            console.error(err);
+            alert(`Erro ao restaurar ${m.nome} na API. Nada foi alterado.`);
+            return false;
+        }
+    } else {
+        m.set(novo);
+        m.salvar();
+    }
     alert(`Backup de ${m.nome} restaurado com sucesso!`);
     return true;
 }
@@ -197,13 +208,13 @@ function backupPaste(key) {
     document.body.appendChild(wrap);
     const ta = document.getElementById('backupPasteText');
     ta.focus();
-    document.getElementById('backupPasteRestore').onclick = () => {
+    document.getElementById('backupPasteRestore').onclick = async () => {
         const text = ta.value.trim();
         if (!text) {
             alert('Cole o conteúdo do backup antes de restaurar.');
             return;
         }
-        if (backupImportText(key, text)) wrap.remove();
+        if (await backupImportText(key, text)) wrap.remove();
     };
 }
 
