@@ -52,7 +52,7 @@ async function apiFetch(endpoint, method = 'GET', data = null) {
     }
 }
 
-document.addEventListener('DOMContentLoaded', () => {
+function initApp() {
     // Carregar tema salvo
     const savedTheme = localStorage.getItem('nexus_theme') || 'light';
     const html = document.documentElement;
@@ -86,7 +86,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // músicas: carrega do banco (via API); se falhar, mantém os dados locais
     loadSongsFromApi();
-});
+}
 
 function toggleDarkMode() {
     const html = document.documentElement;
@@ -121,7 +121,7 @@ function switchMainModule(module) {
 
 // Utilitários
 function newId() {
-    return Date.now() + Math.random().toString(36).substr(2, 9);
+    return Date.now() + Math.random().toString(36).slice(2, 11);
 }
 
 // Data de hoje no fuso LOCAL (YYYY-MM-DD). toISOString() usa UTC e "vira o dia" 3h antes no Brasil.
@@ -141,7 +141,8 @@ function formatCurrency(value) {
 }
 
 function escapeHtml(text) {
-    if (!text) return '';
+    if (text === null || text === undefined || text === '') return '';
+    text = String(text);
     const map = { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#039;' };
     return text.replace(/[&<>"']/g, m => map[m]);
 }

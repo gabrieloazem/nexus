@@ -122,7 +122,12 @@ async function loadSongsFromApi() {
 
     try {
         const data = await apiFetch('/musicas', 'GET');
-        songs = normalizeSongs(Array.isArray(data) ? data : []);
+        console.log('GET /musicas →', data);
+        const lista = Array.isArray(data) ? data : (data && Array.isArray(data.data) ? data.data : []);
+        songs = normalizeSongs(lista);
+        if (lista.length > 0 && songs.length === 0) {
+            console.warn('A API devolveu itens, mas nenhum passou no normalizeSongs. Primeiro item:', lista[0]);
+        }
     } catch (e) {
         console.error('Erro ao carregar músicas da API.', e);
         songs = [];

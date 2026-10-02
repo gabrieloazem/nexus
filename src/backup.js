@@ -219,8 +219,8 @@ function backupPaste(key) {
 }
 
 // No APK não dá para baixar arquivo: esconde "Exportar" (o "Copiar" cobre esse caso)
-document.addEventListener('DOMContentLoaded', () => {
+function initBackup() {
     if (isMobileApp()) {
         document.querySelectorAll('[data-backup-file-export]').forEach(el => { el.style.display = 'none'; });
     }
-});
+}
