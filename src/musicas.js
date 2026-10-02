@@ -114,7 +114,7 @@ function songMomentLabels(s) {
     return MOMENTOS.filter(mo => s[mo.key]).map(mo => mo.label);
 }
 
-// ---------- Carregar da API ----------
+// ---------- Carregar da API 1 ----------
 async function loadSongsFromApi() {
     const count = document.getElementById('songCount');
     const list = document.getElementById('songList');
