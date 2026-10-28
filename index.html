@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="theme-color" content="#f5f6fa">
+  <meta name="description" content="Nexus reúne tarefas, músicas, finanças e anotações em um só lugar.">
+  <link rel="manifest" href="./manifest.webmanifest">
+  <link rel="icon" href="./favicon.svg" type="image/svg+xml">
+  <link rel="stylesheet" href="./styles.css">
+  <title>Nexus</title>
+</head>
+<body>
+  <div class="app-shell">
+    <aside class="sidebar" id="sidebar">
+      <a class="brand" href="#home" aria-label="Nexus, tela inicial">
+        <span class="brand-mark">N</span><span>Nexus</span>
+      </a>
+      <div class="sidebar-label">ESPAÇO DE TRABALHO</div>
+      <nav class="main-nav" aria-label="Navegação principal">
+        <button class="nav-item active" data-route="home"><span class="nav-icon">⌂</span><span>Visão geral</span></button>
+        <button class="nav-item" data-route="tarefas"><span class="nav-icon">✓</span><span>Tarefas</span></button>
+        <button class="nav-item" data-route="musicas"><span class="nav-icon">♫</span><span>Músicas</span></button>
+        <button class="nav-item" data-route="financas"><span class="nav-icon">◒</span><span>Finanças</span></button>
+        <button class="nav-item" data-route="anotacoes"><span class="nav-icon">▤</span><span>Anotações</span></button>
+      </nav>
+      <div class="sidebar-bottom">
+        <div class="connection-status"><span class="status-dot" id="connection-dot"></span><span id="connection-label">Conectando ao Supabase</span></div>
+        <button class="nav-item" data-route="dados"><span class="nav-icon">⇅</span><span>Gerenciar dados</span></button>
+        <button class="theme-toggle" id="theme-toggle"><span class="nav-icon">◐</span><span>Tema</span><span class="theme-value" id="theme-value">Claro</span></button>
+      </div>
+    </aside>
+
+    <main class="main-area">
+      <header class="topbar">
+        <div class="breadcrumbs"><span>Nexus</span><span class="crumb-divider">/</span><strong id="page-title">Visão geral</strong></div>
+        <div class="topbar-actions"><span class="today-label" id="today-label"></span><span class="avatar">N</span></div>
+      </header>
+      <section class="page-content" id="page-content" aria-live="polite"></section>
+    </main>
+  </div>
+  <nav class="mobile-bottom-nav" aria-label="Navegação dos módulos">
+    <button class="mobile-nav-item" data-route="tarefas"><span class="mobile-nav-icon">✓</span><span>Tarefas</span></button>
+    <button class="mobile-nav-item" data-route="musicas"><span class="mobile-nav-icon">♫</span><span>Músicas</span></button>
+    <button class="mobile-nav-item" data-route="financas"><span class="mobile-nav-icon">◒</span><span>Finanças</span></button>
+    <button class="mobile-nav-item" data-route="anotacoes"><span class="mobile-nav-icon">▤</span><span>Anotações</span></button>
+  </nav>
+  <div class="toast-region" id="toast-region" aria-live="polite" aria-atomic="true"></div>
+  <script type="module" src="./src/app.js"></script>
+</body>
+</html>

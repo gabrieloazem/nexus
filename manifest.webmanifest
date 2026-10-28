@@ -1,0 +1,17 @@
+{
+  "name": "Nexus",
+  "short_name": "Nexus",
+  "description": "Tarefas, músicas, finanças e anotações em um só lugar.",
+  "start_url": "./index.html#home",
+  "display": "standalone",
+  "background_color": "#f5f6fa",
+  "theme_color": "#6258e8",
+  "icons": [
+    {
+      "src": "./favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
+}
